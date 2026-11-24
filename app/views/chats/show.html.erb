@@ -1,0 +1,17 @@
+<div class="container my-4">
+  <%= link_to "← All chats", chats_path %>
+  <h2><%= @chat.title.presence || "New chat" %></h2>
+
+  <div class="my-3">
+    <% @messages.each do |message| %>
+      <div class="p-3 mb-2 rounded <%= message.role == 'user' ? 'bg-primary text-white ms-5' : 'bg-light me-5' %>">
+        <%= simple_format(message.content) %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= form_with url: chat_messages_path(@chat), scope: :message do |f| %>
+    <%= f.text_area :content, class: "form-control mb-2", rows: 3, placeholder: "Ask your coach..." %>
+    <%= f.submit "Send", class: "btn btn-primary" %>
+  <% end %>
+</div>
