@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
 
+  resource :profile, only: [:show, :edit, :update]
+
   resources :chats, only: [:index, :show, :create, :destroy] do
     resources :messages, only: [:create]
     resources :plans, only: [:create]

@@ -16,6 +16,16 @@ class User < ApplicationRecord
     "male" => "Male"
   }.freeze
 
+   GOALS = {
+    "lose_fat" => "Lose weight / body fat",
+    "build_muscle" => "Build muscle",
+    "maintain" => "Maintain my weight",
+    "get_stronger" => "Get stronger",
+    "improve_endurance" => "Improve endurance / cardio fitness",
+    "improve_mobility" => "Improve flexibility and mobility",
+    "general_health" => "Feel healthier overall"
+  }.freeze
+
   ACTIVITY_LEVELS = {
     "sedentary" => "Mostly sitting (desk job, little walking)",
     "lightly_active" => "Lightly active (some walking)",
@@ -121,7 +131,8 @@ class User < ApplicationRecord
     allergies: ALLERGIES,
     exercise_types: EXERCISE_TYPES,
     equipment: EQUIPMENT,
-    injuries: INJURIES
+    injuries: INJURIES,
+    goals: GOALS
   }.freeze
 
   # ---------- Validations ----------
@@ -142,7 +153,16 @@ class User < ApplicationRecord
   validates :target_weight_kg, numericality: { in: 30..300 }, allow_blank: true
 
   before_validation :clean_array_fields
+  before_validation :set_equipment_from_location
   validate :array_fields_have_valid_options
+
+  # Only checked when saving the profile form
+  with_options on: :profile do
+    validates :birth_date, :sex, :height_cm, :current_weight_kg,
+              :activity_level, :diet_type, :meals_per_day, :cooking_time,
+              :fitness_level, :training_location, :goals,
+              :training_days_per_week, :session_minutes, presence: true
+  end
 
   # ---------- Methods ----------
   def profile_complete?
@@ -225,6 +245,11 @@ class User < ApplicationRecord
     ARRAY_FIELDS.each_key do |field|
       self[field] = Array(self[field]).compact_blank
     end
+  end
+
+  # We don't ask gym users about equipment, we assume they have everything
+  def set_equipment_from_location
+    self.equipment = EQUIPMENT.keys - ["none"] if training_location == "gym"
   end
 
   def array_fields_have_valid_options

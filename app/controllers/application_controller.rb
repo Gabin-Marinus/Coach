@@ -5,4 +5,9 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
   before_action :authenticate_user! # added by Priscila
+
+  def after_sign_in_path_for(resource)
+    resource.profile_complete? ? root_path : edit_profile_path
+  end
+
 end
