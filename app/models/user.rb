@@ -3,5 +3,177 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
+
+  # ---------- Associations ----------
+  has_many :plans, dependent: :destroy
+  has_many :workouts, through: :plans
+  has_many :meals, through: :plans
   has_many :chats, dependent: :destroy
+
+   # ---------- Dropdowns (one answer) ----------
+  SEXES = {
+    "female" => "Female",
+    "male" => "Male"
+  }.freeze
+
+  ACTIVITY_LEVELS = {
+    "sedentary" => "Mostly sitting (desk job, little walking)",
+    "lightly_active" => "Lightly active (some walking)",
+    "moderately_active" => "Moderately active (on my feet a lot)",
+    "very_active" => "Very active (physical job)"
+  }.freeze
+
+  DIET_TYPES = {
+    "omnivore" => "No restrictions",
+    "vegetarian" => "Vegetarian",
+    "vegan" => "Vegan",
+    "pescatarian" => "Pescatarian",
+    "low_carb" => "Low carb",
+    "mediterranean" => "Mediterranean",
+    "halal" => "Halal",
+    "kosher" => "Kosher"
+  }.freeze
+
+  COOKING_TIMES = {
+    "quick" => "Quick (under 15 min)",
+    "medium" => "Medium (15 to 30 min)",
+    "long" => "I enjoy cooking (30+ min)"
+  }.freeze
+
+  FITNESS_LEVELS = {
+    "beginner" => "Beginner (new or coming back after a break)",
+    "intermediate" => "Intermediate (train regularly)",
+    "advanced" => "Advanced (train consistently for 1+ years)"
+  }.freeze
+
+  TRAINING_LOCATIONS = {
+    "home" => "At home",
+    "gym" => "At the gym",
+    "outdoors" => "Outdoors",
+    "mixed" => "A mix"
+  }.freeze
+
+  PREFERRED_TIMES = {
+    "morning" => "Morning",
+    "midday" => "Midday",
+    "evening" => "Evening",
+    "flexible" => "It varies"
+  }.freeze
+
+  MEALS_PER_DAY = [2, 3, 4, 5].freeze
+  TRAINING_DAYS = (1..7).to_a.freeze
+  SESSION_MINUTES = [15, 20, 30, 45, 60, 90].freeze
+
+  # ---------- Checkboxes (several answers) ----------
+  ALLERGIES = {
+    "gluten" => "Gluten",
+    "dairy" => "Dairy",
+    "eggs" => "Eggs",
+    "peanuts" => "Peanuts",
+    "tree_nuts" => "Tree nuts",
+    "soy" => "Soy",
+    "fish" => "Fish",
+    "shellfish" => "Shellfish",
+    "sesame" => "Sesame"
+  }.freeze
+
+  EXERCISE_TYPES = {
+    "strength" => "Strength training / weights",
+    "bodyweight" => "Bodyweight / calisthenics",
+    "hiit" => "HIIT",
+    "running" => "Running",
+    "cycling" => "Cycling",
+    "swimming" => "Swimming",
+    "walking" => "Walking / hiking",
+    "yoga" => "Yoga",
+    "pilates" => "Pilates",
+    "mobility" => "Stretching / mobility",
+    "dance" => "Dance",
+    "team_sports" => "Team sports",
+    "boxing" => "Boxing / martial arts"
+  }.freeze
+
+  EQUIPMENT = {
+    "none" => "No equipment",
+    "dumbbells" => "Dumbbells",
+    "kettlebells" => "Kettlebells",
+    "resistance_bands" => "Resistance bands",
+    "pull_up_bar" => "Pull-up bar",
+    "bench" => "Bench",
+    "barbell" => "Barbell and rack",
+    "machines" => "Gym machines",
+    "cardio_machine" => "Treadmill / bike / rower",
+    "yoga_mat" => "Yoga mat",
+    "jump_rope" => "Jump rope"
+  }.freeze
+
+  INJURIES = {
+    "knees" => "Knees",
+    "lower_back" => "Lower back",
+    "shoulders" => "Shoulders",
+    "wrists" => "Wrists",
+    "ankles" => "Ankles",
+    "hips" => "Hips",
+    "neck" => "Neck"
+  }.freeze
+
+  ARRAY_FIELDS = {
+    allergies: ALLERGIES,
+    exercise_types: EXERCISE_TYPES,
+    equipment: EQUIPMENT,
+    injuries: INJURIES
+  }.freeze
+
+  # ---------- Validations ----------
+  # allow_blank: users sign up with email + password first,
+  # and fill in the profile afterwards
+  validates :sex, inclusion: { in: SEXES.keys }, allow_blank: true
+  validates :activity_level, inclusion: { in: ACTIVITY_LEVELS.keys }, allow_blank: true
+  validates :diet_type, inclusion: { in: DIET_TYPES.keys }, allow_blank: true
+  validates :cooking_time, inclusion: { in: COOKING_TIMES.keys }, allow_blank: true
+  validates :fitness_level, inclusion: { in: FITNESS_LEVELS.keys }, allow_blank: true
+  validates :training_location, inclusion: { in: TRAINING_LOCATIONS.keys }, allow_blank: true
+  validates :preferred_time, inclusion: { in: PREFERRED_TIMES.keys }, allow_blank: true
+  validates :meals_per_day, inclusion: { in: MEALS_PER_DAY }, allow_blank: true
+  validates :training_days_per_week, inclusion: { in: TRAINING_DAYS }, allow_blank: true
+  validates :session_minutes, inclusion: { in: SESSION_MINUTES }, allow_blank: true
+  validates :height_cm, numericality: { in: 100..250 }, allow_blank: true
+  validates :current_weight_kg, numericality: { in: 30..300 }, allow_blank: true
+  validates :target_weight_kg, numericality: { in: 30..300 }, allow_blank: true
+
+  before_validation :clean_array_fields
+  validate :array_fields_have_valid_options
+
+  # ---------- Methods ----------
+  def profile_complete?
+    birth_date.present? && sex.present? && height_cm.present? &&
+      current_weight_kg.present? && activity_level.present? && fitness_level.present?
+  end
+
+  def age
+    return nil if birth_date.blank?
+
+    ((Date.today - birth_date) / 365.25).floor
+  end
+
+  def current_plan
+    plans.active.last
+  end
+
+  private
+
+  # Checkbox forms send an empty "" value, so remove it
+  def clean_array_fields
+    ARRAY_FIELDS.each_key do |field|
+      self[field] = Array(self[field]).compact_blank
+    end
+  end
+
+  def array_fields_have_valid_options
+    ARRAY_FIELDS.each do |field, options|
+      invalid = self[field] - options.keys
+      errors.add(field, "has invalid options: #{invalid.join(', ')}") if invalid.any?
+    end
+  end
 end
+

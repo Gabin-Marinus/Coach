@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_125416) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -53,6 +53,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
     t.index ["user_id"], name: "index_chats_on_user_id"
   end
 
+  create_table "meals", force: :cascade do |t|
+    t.bigint "plan_id", null: false
+    t.date "date"
+    t.string "meal_type"
+    t.string "name"
+    t.text "description"
+    t.text "recipe"
+    t.integer "calories"
+    t.integer "protein_g"
+    t.integer "carbs_g"
+    t.integer "fat_g"
+    t.string "status", default: "planned"
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["plan_id"], name: "index_meals_on_plan_id"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.bigint "chat_id", null: false
     t.string "role", null: false
@@ -69,6 +87,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["chat_id"], name: "index_messages_on_chat_id"
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "goal"
+    t.date "start_date"
+    t.date "end_date"
+    t.string "status", default: "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_plans_on_user_id"
   end
 
   create_table "ruby_llm_batches", force: :cascade do |t|
@@ -195,13 +224,50 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "birth_date"
+    t.string "sex"
+    t.integer "height_cm"
+    t.decimal "current_weight_kg", precision: 5, scale: 1
+    t.string "activity_level"
+    t.decimal "target_weight_kg", precision: 5, scale: 1
+    t.string "diet_type"
+    t.string "allergies", default: [], array: true
+    t.text "food_dislikes"
+    t.integer "meals_per_day"
+    t.string "cooking_time"
+    t.string "fitness_level"
+    t.string "exercise_types", default: [], array: true
+    t.string "equipment", default: [], array: true
+    t.string "training_location"
+    t.integer "training_days_per_week"
+    t.integer "session_minutes"
+    t.string "preferred_time"
+    t.string "injuries", default: [], array: true
+    t.text "injury_notes"
+    t.text "exercise_dislikes"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "workouts", force: :cascade do |t|
+    t.bigint "plan_id", null: false
+    t.date "date"
+    t.string "name"
+    t.text "description"
+    t.integer "duration_min"
+    t.string "status", default: "planned"
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["plan_id"], name: "index_workouts_on_plan_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "chats", "ruby_llm_models"
   add_foreign_key "chats", "users"
+  add_foreign_key "meals", "plans"
   add_foreign_key "messages", "chats"
+  add_foreign_key "plans", "users"
+  add_foreign_key "workouts", "plans"
 end
