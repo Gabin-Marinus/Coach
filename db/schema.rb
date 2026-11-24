@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_125416) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_143718) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,12 +91,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_125416) do
 
   create_table "plans", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "goal"
     t.date "start_date"
     t.date "end_date"
     t.string "status", default: "active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "goals", default: [], array: true
     t.index ["user_id"], name: "index_plans_on_user_id"
   end
 
@@ -245,6 +245,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_125416) do
     t.string "injuries", default: [], array: true
     t.text "injury_notes"
     t.text "exercise_dislikes"
+    t.string "goals", default: [], array: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
