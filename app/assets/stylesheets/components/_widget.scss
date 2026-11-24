@@ -1,0 +1,74 @@
+.dashboard-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.widget-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.widget {
+  width: 220px;
+  height: 220px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.widget .widget-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #6B7C85;
+  margin-bottom: 12px;
+}
+
+.widget h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E3A46;
+  margin: 0;
+}
+
+.widget p {
+  font-size: 14px;
+  color: #6B7C85;
+  margin: 0;
+}
+
+.widget-btn {
+  margin-top: auto;
+  align-self: flex-end;
+  background-color: #6FAF8C;
+  color: #FFFFFF;
+  padding: 6px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.widget .progress {
+  height: 6px;
+  margin-top: auto;
+}
+
+.widget .progress-bar {
+  background-color: #6FAF8C;
+}
+
+.widget-big {
+  flex-grow: 1;
+  border: 2px dashed #D5DDD8;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #A0ADB4;
+}

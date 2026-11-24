@@ -1,2 +1,121 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<div class="d-flex">
+
+  <nav class="sidebar">
+    <%= link_to "🏠 Home", root_path, class: "sidebar-link active" %>
+
+    <hr>
+
+    <%= link_to "🍽️ Meals", "#", class: "sidebar-link" %>
+    <%= link_to "🏋️ Gym plan", "#", class: "sidebar-link" %>
+    <%= link_to "📈 Progress", "#", class: "sidebar-link" %>
+    <%= link_to "😴 Recovery", "#", class: "sidebar-link" %>
+
+    <%= link_to "⚙️ Settings", edit_user_registration_path, class: "sidebar-link sidebar-bottom" %>
+  </nav>
+
+  <main class="main-content">
+    <div class="progress-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2>Goal: 70 kg</h2>
+        <p>Start 80 kg · Now 75 kg</p>
+      </div>
+
+      <div class="progress">
+        <div class="progress-bar" style="width: 50%;"></div>
+      </div>
+
+      <p class="progress-text">50% done · 5 kg to go</p>
+    </div>
+
+    <div class="dashboard-row">
+      <div class="widget-column">
+
+        <div class="widget">
+          <p class="widget-label">TODAY'S WORKOUT</p>
+          <h3>Upper body</h3>
+          <p>45 min · 18:00</p>
+          <%= link_to "Start", "#", class: "widget-btn" %>
+        </div>
+
+        <div class="widget">
+          <p class="widget-label">TODAY'S NUTRITION</p>
+          <h3>1,450 kcal</h3>
+          <p>of 2,200 kcal</p>
+          <div class="progress">
+            <div class="progress-bar" style="width: 65%;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="right-column">
+        <div class="cardio-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="widget-label">CARDIO THIS WEEK</p>
+            <p class="cardio-numbers">90 / 150 min</p>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" style="width: 60%;"></div>
+          </div>
+          <p class="cardio-today">Today: 25 min brisk walk or 20 min cycling</p>
+        </div>
+
+        <div class="coach-box">
+          <div class="d-flex justify-content-between align-items-center">
+            <p class="coach-label">YOUR COACH · THIS WEEK</p>
+            <p class="coach-days-left">5 days left</p>
+          </div>
+
+          <p class="coach-summary">✓ Strong week so far: 2 workouts done and you're losing weight at a healthy pace.</p>
+
+          <hr>
+
+          <p class="coach-label">WEEKLY GOALS</p>
+
+          <div class="coach-goal">
+            <span class="coach-goal-name">Workouts</span>
+            <span class="coach-goal-value">2 of 4</span>
+            <div class="progress">
+              <div class="progress-bar" style="width: 50%;"></div>
+            </div>
+          </div>
+
+          <div class="coach-goal">
+            <span class="coach-goal-name">Protein target</span>
+            <span class="coach-goal-value">3 of 7 days</span>
+            <div class="progress">
+              <div class="progress-bar" style="width: 43%;"></div>
+            </div>
+          </div>
+
+          <div class="coach-goal">
+            <span class="coach-goal-name">Meals logged</span>
+            <span class="coach-goal-value">12 of 21</span>
+            <div class="progress">
+              <div class="progress-bar" style="width: 57%;"></div>
+            </div>
+          </div>
+
+          <div class="coach-goal">
+            <span class="coach-goal-name">Weight</span>
+            <span class="coach-goal-value">−0.4 kg</span>
+            <span class="coach-goal-note">goal −0.5 kg · on track</span>
+          </div>
+
+          <hr>
+
+          <p class="coach-label">HOW TO FINISH THE WEEK STRONG</p>
+          <div class="coach-tip">
+            <p>Protein is your weak spot. Add a Greek yoghurt or 2 eggs to breakfast on the next 4 days.</p>
+            <p>Plan your 2 remaining workouts for Thursday and Saturday.</p>
+          </div>
+
+          <div class="text-end">
+            <%= link_to "Ask coach", "#", class: "coach-btn" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>

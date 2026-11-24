@@ -1,0 +1,43 @@
+.right-column {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cardio-card {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px 20px;
+}
+
+.cardio-card .widget-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #6B7C85;
+  margin: 0;
+}
+
+.cardio-card .cardio-numbers {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E3A46;
+  margin: 0;
+}
+
+.cardio-card .progress {
+  height: 6px;
+  margin: 10px 0 8px;
+}
+
+.cardio-card .progress-bar {
+  background-color: #FF8A6B;
+}
+
+.cardio-card .cardio-today {
+  font-size: 14px;
+  color: #6B7C85;
+  margin: 0;
+}
