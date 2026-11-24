@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_122831) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -195,6 +195,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_112538) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "birth_date"
+    t.string "sex"
+    t.integer "height_cm"
+    t.decimal "current_weight_kg", precision: 5, scale: 1
+    t.string "activity_level"
+    t.decimal "target_weight_kg", precision: 5, scale: 1
+    t.string "diet_type"
+    t.string "allergies", default: [], array: true
+    t.text "food_dislikes"
+    t.integer "meals_per_day"
+    t.string "cooking_time"
+    t.string "fitness_level"
+    t.string "exercise_types", default: [], array: true
+    t.string "equipment", default: [], array: true
+    t.string "training_location"
+    t.integer "training_days_per_week"
+    t.integer "session_minutes"
+    t.string "preferred_time"
+    t.string "injuries", default: [], array: true
+    t.text "injury_notes"
+    t.text "exercise_dislikes"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
