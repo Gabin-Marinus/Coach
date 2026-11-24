@@ -10,7 +10,7 @@ class User < ApplicationRecord
   has_many :meals, through: :plans
   has_many :chats, dependent: :destroy
 
-   # ---------- Dropdowns (one answer) ----------
+  # ---------- Dropdowns (one answer) ----------
   SEXES = {
     "female" => "Female",
     "male" => "Male"
@@ -179,8 +179,66 @@ class User < ApplicationRecord
   def current_plan
     plans.active.last
   end
+  # added by Pri
+
+  def coach_context
+    [profile_context, plans_context].join("\n\n")
+  end
 
   private
+
+  def profile_context
+    <<~TEXT
+      ## User profile
+      - Age: #{age || 'not informed'}
+      - Sex: #{label(SEXES, sex)}
+      - Height: #{height_cm ? "#{height_cm} cm" : 'not informed'}
+      - Current weight: #{current_weight_kg ? "#{current_weight_kg} kg" : 'not informed'}
+      - Target weight: #{target_weight_kg ? "#{target_weight_kg} kg" : 'not informed'}
+      - Activity level: #{label(ACTIVITY_LEVELS, activity_level)}
+      - Diet: #{label(DIET_TYPES, diet_type)}
+      - Allergies: #{labels(ALLERGIES, allergies)}
+      - Food dislikes: #{food_dislikes.presence || 'none'}
+      - Meals per day: #{meals_per_day || 'not informed'}
+      - Cooking time: #{label(COOKING_TIMES, cooking_time)}
+      - Fitness level: #{label(FITNESS_LEVELS, fitness_level)}
+      - Preferred exercise: #{labels(EXERCISE_TYPES, exercise_types)}
+      - Equipment: #{labels(EQUIPMENT, equipment)}
+      - Training location: #{label(TRAINING_LOCATIONS, training_location)}
+      - Training days per week: #{training_days_per_week || 'not informed'}
+      - Session length: #{session_minutes ? "#{session_minutes} min" : 'not informed'}
+      - Preferred time: #{label(PREFERRED_TIMES, preferred_time)}
+      - Injuries: #{labels(INJURIES, injuries)}
+      - Injury notes: #{injury_notes.presence || 'none'}
+      - Exercise dislikes: #{exercise_dislikes.presence || 'none'}
+    TEXT
+  end
+
+  def plans_context
+    return "## Previous plans\nThe user has no plans yet. This will be their first plan." if plans.empty?
+
+    summaries = plans.order(start_date: :desc).limit(3).map do |plan|
+      workouts = plan.workouts.group(:status).count
+      meals    = plan.meals.group(:status).count
+
+      <<~TEXT
+        ### #{plan.goal_label} (#{plan.status})
+        - Period: #{plan.start_date} to #{plan.end_date}
+        - Workouts: #{workouts['done'] || 0} done, #{workouts['skipped'] || 0} skipped, #{workouts['planned'] || 0} planned
+        - Meals: #{meals['done'] || 0} done, #{meals['skipped'] || 0} skipped, #{meals['planned'] || 0} planned
+      TEXT
+    end
+
+    "## Previous plans (most recent first)\n#{summaries.join("\n")}"
+  end
+
+  def label(options, key)
+    options[key] || "not informed"
+  end
+
+  def labels(options, keys)
+    keys.map { |key| options[key] }.compact.join(", ").presence || "none"
+  end
 
   # Checkbox forms send an empty "" value, so remove it
   def clean_array_fields
