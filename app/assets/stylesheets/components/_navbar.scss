@@ -1,12 +1,106 @@
-.navbar-lewagon {
+// Green Coach navbar
+.navbar-coach {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  background: white;
+  gap: 16px;
+  padding: 14px 32px;
+  background: #16382B;
+  box-shadow: 0 2px 12px rgba(20, 33, 28, 0.18);
 }
 
-.navbar-lewagon .navbar-collapse {
-  flex-grow: 0;
+.navbar-coach-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
 }
 
-.navbar-lewagon .navbar-brand img {
-  width: 40px;
+.navbar-coach-brand:hover {
+  color: #FFFFFF;
+}
+
+.navbar-coach-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #8FD3AE;
+  color: #16382B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-coach-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-coach-link {
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #E3ECE7;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navbar-coach-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.navbar-coach-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background: #8FD3AE;
+  color: #16382B;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.navbar-coach-btn:hover {
+  background: #A3DDBE;
+  color: #16382B;
+}
+
+.navbar-coach-email {
+  color: #A9C2B6;
+  font-size: 14px;
+}
+
+.navbar-coach-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  background: transparent;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navbar-coach-btn-outline:hover {
+  background: #FFFFFF;
+  color: #16382B;
 }
