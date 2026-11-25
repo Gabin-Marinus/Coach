@@ -1,0 +1,118 @@
+<div class="container my-5" style="max-width: 720px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">My profile</h1>
+    <div class="d-flex gap-2 my-3">
+  <%= link_to "My workout plan", workouts_profile_path, class: "btn btn-outline-primary" %>
+  <%= link_to "My meal plan", meals_profile_path, class: "btn btn-outline-primary" %>
+</div>
+    <%= link_to "Edit profile", edit_profile_path, class: "btn btn-primary" %>
+  </div>
+
+  <% unless @user.profile_complete? %>
+    <div class="alert alert-warning">
+      Your profile isn't complete yet. Fill it in so we can build your plan.
+      <%= link_to "Complete my profile", edit_profile_path, class: "alert-link" %>
+    </div>
+  <% end %>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">About you</h4>
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Age</dt>
+        <dd class="col-sm-7"><%= @user.age || "–" %></dd>
+
+        <dt class="col-sm-5">Sex</dt>
+        <dd class="col-sm-7"><%= option_label(User::SEXES, @user.sex) %></dd>
+
+        <dt class="col-sm-5">Height</dt>
+        <dd class="col-sm-7"><%= @user.height_cm ? "#{@user.height_cm} cm" : "–" %></dd>
+
+        <dt class="col-sm-5">Current weight</dt>
+        <dd class="col-sm-7"><%= @user.current_weight_kg ? "#{@user.current_weight_kg} kg" : "–" %></dd>
+
+        <dt class="col-sm-5">Activity outside workouts</dt>
+        <dd class="col-sm-7"><%= option_label(User::ACTIVITY_LEVELS, @user.activity_level) %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Your goal</h4>
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Goals</dt>
+        <dd class="col-sm-7"><%= option_labels(User::GOALS, @user.goals) %></dd>
+
+        <dt class="col-sm-5">Target weight</dt>
+        <dd class="col-sm-7"><%= @user.target_weight_kg.present? ? "#{@user.target_weight_kg} kg" : "–" %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Food</h4>
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Diet</dt>
+        <dd class="col-sm-7"><%= option_label(User::DIET_TYPES, @user.diet_type) %></dd>
+
+        <dt class="col-sm-5">Allergies</dt>
+        <dd class="col-sm-7"><%= option_labels(User::ALLERGIES, @user.allergies) %></dd>
+
+        <dt class="col-sm-5">Doesn't eat</dt>
+        <dd class="col-sm-7"><%= @user.food_dislikes.presence || "–" %></dd>
+
+        <dt class="col-sm-5">Meals per day</dt>
+        <dd class="col-sm-7"><%= @user.meals_per_day.presence || "–" %></dd>
+
+        <dt class="col-sm-5">Cooking time</dt>
+        <dd class="col-sm-7"><%= option_label(User::COOKING_TIMES, @user.cooking_time) %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Training</h4>
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Fitness level</dt>
+        <dd class="col-sm-7"><%= option_label(User::FITNESS_LEVELS, @user.fitness_level) %></dd>
+
+        <dt class="col-sm-5">Enjoys</dt>
+        <dd class="col-sm-7"><%= option_labels(User::EXERCISE_TYPES, @user.exercise_types) %></dd>
+
+        <dt class="col-sm-5">Trains</dt>
+        <dd class="col-sm-7"><%= option_label(User::TRAINING_LOCATIONS, @user.training_location) %></dd>
+
+        <dt class="col-sm-5">Equipment</dt>
+        <dd class="col-sm-7">
+          <%= @user.training_location == "gym" ? "Full gym" : option_labels(User::EQUIPMENT, @user.equipment) %>
+        </dd>
+
+        <dt class="col-sm-5">Schedule</dt>
+        <dd class="col-sm-7">
+          <% if @user.training_days_per_week && @user.session_minutes %>
+            <%= @user.training_days_per_week %> days a week, <%= @user.session_minutes %> min per session
+          <% else %>
+            –
+          <% end %>
+        </dd>
+
+        <dt class="col-sm-5">Preferred time</dt>
+        <dd class="col-sm-7"><%= option_label(User::PREFERRED_TIMES, @user.preferred_time, blank: "No preference") %></dd>
+
+        <dt class="col-sm-5">Injuries</dt>
+        <dd class="col-sm-7"><%= option_labels(User::INJURIES, @user.injuries) %></dd>
+
+        <% if @user.injury_notes.present? %>
+          <dt class="col-sm-5">Injury notes</dt>
+          <dd class="col-sm-7"><%= @user.injury_notes %></dd>
+        <% end %>
+
+        <dt class="col-sm-5">Exercises to avoid</dt>
+        <dd class="col-sm-7"><%= @user.exercise_dislikes.presence || "–" %></dd>
+      </dl>
+    </div>
+  </div>
+</div>

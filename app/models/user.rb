@@ -10,10 +10,20 @@ class User < ApplicationRecord
   has_many :meals, through: :plans
   has_many :chats, dependent: :destroy
 
-   # ---------- Dropdowns (one answer) ----------
+  # ---------- Dropdowns (one answer) ----------
   SEXES = {
     "female" => "Female",
     "male" => "Male"
+  }.freeze
+
+  GOALS = {
+    "lose_fat" => "Lose weight / body fat",
+    "build_muscle" => "Build muscle",
+    "maintain" => "Maintain my weight",
+    "get_stronger" => "Get stronger",
+    "improve_endurance" => "Improve endurance / cardio fitness",
+    "improve_mobility" => "Improve flexibility and mobility",
+    "general_health" => "Feel healthier overall"
   }.freeze
 
   ACTIVITY_LEVELS = {
@@ -121,7 +131,8 @@ class User < ApplicationRecord
     allergies: ALLERGIES,
     exercise_types: EXERCISE_TYPES,
     equipment: EQUIPMENT,
-    injuries: INJURIES
+    injuries: INJURIES,
+    goals: GOALS
   }.freeze
 
   # ---------- Validations ----------
@@ -142,7 +153,16 @@ class User < ApplicationRecord
   validates :target_weight_kg, numericality: { in: 30..300 }, allow_blank: true
 
   before_validation :clean_array_fields
+  before_validation :set_equipment_from_location
   validate :array_fields_have_valid_options
+
+  # Only checked when saving the profile form
+  with_options on: :profile do
+    validates :birth_date, :sex, :height_cm, :current_weight_kg,
+              :activity_level, :diet_type, :meals_per_day, :cooking_time,
+              :fitness_level, :training_location, :goals,
+              :training_days_per_week, :session_minutes, presence: true
+  end
 
   # ---------- Methods ----------
   def profile_complete?
@@ -159,14 +179,82 @@ class User < ApplicationRecord
   def current_plan
     plans.active.last
   end
+  # added by Pri
+
+  def coach_context
+    [profile_context, plans_context].join("\n\n")
+  end
+
+  def ready_for_plan?
+    profile_complete? && goals.present?
+  end
 
   private
+
+  def profile_context
+    <<~TEXT
+      ## User profile
+      - Goals: #{labels(GOALS, goals)}
+      - Age: #{age || 'not informed'}
+      - Sex: #{label(SEXES, sex)}
+      - Height: #{height_cm ? "#{height_cm} cm" : 'not informed'}
+      - Current weight: #{current_weight_kg ? "#{current_weight_kg} kg" : 'not informed'}
+      - Target weight: #{target_weight_kg ? "#{target_weight_kg} kg" : 'not informed'}
+      - Activity level: #{label(ACTIVITY_LEVELS, activity_level)}
+      - Diet: #{label(DIET_TYPES, diet_type)}
+      - Allergies: #{labels(ALLERGIES, allergies)}
+      - Food dislikes: #{food_dislikes.presence || 'none'}
+      - Meals per day: #{meals_per_day || 'not informed'}
+      - Cooking time: #{label(COOKING_TIMES, cooking_time)}
+      - Fitness level: #{label(FITNESS_LEVELS, fitness_level)}
+      - Preferred exercise: #{labels(EXERCISE_TYPES, exercise_types)}
+      - Equipment: #{labels(EQUIPMENT, equipment)}
+      - Training location: #{label(TRAINING_LOCATIONS, training_location)}
+      - Training days per week: #{training_days_per_week || 'not informed'}
+      - Session length: #{session_minutes ? "#{session_minutes} min" : 'not informed'}
+      - Preferred time: #{label(PREFERRED_TIMES, preferred_time)}
+      - Injuries: #{labels(INJURIES, injuries)}
+      - Injury notes: #{injury_notes.presence || 'none'}
+      - Exercise dislikes: #{exercise_dislikes.presence || 'none'}
+    TEXT
+  end
+
+  def plans_context
+    return "## Previous plans\nThe user has no plans yet. This will be their first plan." if plans.empty?
+
+    summaries = plans.order(start_date: :desc).limit(3).map do |plan|
+      workouts = plan.workouts.group(:status).count
+      meals    = plan.meals.group(:status).count
+
+      <<~TEXT
+        ### #{plan.goal_labels.join(", ")} (#{plan.status})
+        - Period: #{plan.start_date} to #{plan.end_date}
+        - Workouts: #{workouts["done"] || 0} done, #{workouts["skipped"] || 0} skipped, #{workouts["planned"] || 0} planned
+        - Meals: #{meals["done"] || 0} done, #{meals["skipped"] || 0} skipped, #{meals["planned"] || 0} planned
+      TEXT
+    end
+
+    "## Previous plans (most recent first)\n#{summaries.join("\n")}"
+  end
+
+  def label(options, key)
+    options[key] || "not informed"
+  end
+
+  def labels(options, keys)
+    keys.map { |key| options[key] }.compact.join(", ").presence || "none"
+  end
 
   # Checkbox forms send an empty "" value, so remove it
   def clean_array_fields
     ARRAY_FIELDS.each_key do |field|
       self[field] = Array(self[field]).compact_blank
     end
+  end
+
+  # We don't ask gym users about equipment, we assume they have everything
+  def set_equipment_from_location
+    self.equipment = EQUIPMENT.keys - ["none"] if training_location == "gym"
   end
 
   def array_fields_have_valid_options
@@ -176,4 +264,3 @@ class User < ApplicationRecord
     end
   end
 end
-

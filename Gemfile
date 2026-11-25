@@ -9,6 +9,10 @@ gem "ruby_llm"
 # gem devise added by Priscila
 gem "devise"
 
+# gems added by Priscila
+gem "kramdown"
+gem "rouge"
+gem "kramdown-parser-gfm"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.4", ">= 8.1.4.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]

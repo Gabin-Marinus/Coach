@@ -1,0 +1,130 @@
+<div class="container my-5" style="max-width: 720px;">
+  <h1 class="mb-2">Tell us about you</h1>
+  <p class="text-muted mb-4">We use this to build your meal and training plan.</p>
+
+  <%= simple_form_for @user, url: profile_path, method: :patch do |f| %>
+    <%= f.error_notification %>
+
+    <%# ---------- 1. About you ---------- %>
+    <h4 class="mt-4 mb-3">1. About you</h4>
+
+    <%= f.input :birth_date, as: :date, html5: true, required: true %>
+
+    <%= f.input :sex,
+                label: "Sex (used to calculate your calorie needs)",
+                prompt: "Choose one",
+                collection: User::SEXES.invert,
+                required: true %>
+
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.input :height_cm, label: "Height (cm)", required: true,
+                    input_html: { min: 100, max: 250 } %>
+      </div>
+      <div class="col-md-6">
+        <%= f.input :current_weight_kg, label: "Current weight (kg)", required: true,
+                    input_html: { min: 30, max: 300, step: 0.1 } %>
+      </div>
+    </div>
+
+    <%= f.input :activity_level,
+                label: "How active are you outside of workouts?",
+                prompt: "Choose one",
+                collection: User::ACTIVITY_LEVELS.invert,
+                required: true %>
+
+    <%# ---------- 2. Goal ---------- %>
+    <h4 class="mt-5 mb-3">2. Your goal</h4>
+
+    <%= f.input :goals, label: "What are your goals?",
+                as: :check_boxes,
+                collection: User::GOALS.invert,
+                required: true %>
+
+    <%= f.input :target_weight_kg, label: "Target weight (kg, optional)",
+                input_html: { min: 30, max: 300, step: 0.1 } %>
+
+    <%# ---------- 3. Food ---------- %>
+    <h4 class="mt-5 mb-3">3. Food</h4>
+
+    <%= f.input :diet_type, label: "Diet",
+                collection: User::DIET_TYPES.invert,
+                prompt: "Choose one", required: true %>
+
+    <%= f.input :allergies, label: "Allergies or intolerances",
+                as: :check_boxes,
+                collection: User::ALLERGIES.invert %>
+
+    <%= f.input :food_dislikes, label: "Anything you don't eat or don't like?",
+                input_html: { rows: 2, placeholder: "e.g. mushrooms, very spicy food" } %>
+
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.input :meals_per_day, label: "Meals per day",
+                    collection: User::MEALS_PER_DAY,
+                    prompt: "Choose one", required: true %>
+      </div>
+    </div>
+
+    <%= f.input :cooking_time, label: "How much time do you want to spend cooking?",
+                prompt: "Choose one",
+                collection: User::COOKING_TIMES.invert,
+                required: true %>
+
+    <%# ---------- 4. Training ---------- %>
+    <h4 class="mt-5 mb-3">4. Training</h4>
+
+    <%= f.input :fitness_level, label: "Your fitness level",
+                prompt: "Choose one",
+                collection: User::FITNESS_LEVELS.invert,
+                required: true %>
+
+    <%= f.input :exercise_types, label: "What do you enjoy?",
+                as: :check_boxes,
+                collection: User::EXERCISE_TYPES.invert %>
+
+    <div data-controller="equipment">
+      <%= f.input :training_location, label: "Where do you train?",
+                  prompt: "Choose one",
+                  collection: User::TRAINING_LOCATIONS.invert,
+                  required: true,
+                  input_html: { data: { action: "change->equipment#toggle" } } %>
+
+      <%# Not asked for gym training, gym users get all equipment (see User#set_equipment_from_location) %>
+      <div data-equipment-target="equipment">
+        <%= f.input :equipment, label: "What equipment do you have access to?",
+                    as: :check_boxes,
+                    collection: User::EQUIPMENT.invert %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.input :training_days_per_week, label: "Days per week",
+                    collection: User::TRAINING_DAYS,
+                    prompt: "Choose one", required: true %>
+      </div>
+      <div class="col-md-6">
+        <%= f.input :session_minutes, label: "Minutes per session",
+                    collection: User::SESSION_MINUTES.map { |m| ["#{m} min", m] },
+                    prompt: "Choose one", required: true %>
+      </div>
+    </div>
+
+    <%= f.input :preferred_time, label: "When do you prefer to train? (optional)",
+                collection: User::PREFERRED_TIMES.invert,
+                include_blank: "No preference" %>
+
+    <%= f.input :injuries, label: "Any injuries or problem areas?",
+                as: :check_boxes,
+                collection: User::INJURIES.invert %>
+
+    <%= f.input :injury_notes, label: "Anything we should know about them?",
+                input_html: { rows: 2, placeholder: "e.g. knee pain when running downhill" } %>
+
+    <%= f.input :exercise_dislikes, label: "Exercises you don't like (optional)",
+                input_html: { rows: 2, placeholder: "e.g. burpees, running" } %>
+
+    <%= f.button :submit, "Save my profile", class: "btn btn-primary btn-lg mt-4 w-100" %>
+  <% end %>
+</div>

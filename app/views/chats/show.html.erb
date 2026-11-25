@@ -1,17 +1,51 @@
-<div class="container my-4">
-  <%= link_to "← All chats", chats_path %>
-  <h2><%= @chat.title.presence || "New chat" %></h2>
+<div class="container py-4" style="max-width: 800px;">
+  <%= link_to "← All chats", chats_path, class: "text-muted text-decoration-none" %>
 
-  <div class="my-3">
+  <h1 id="chat_title" class="h3 my-3"><%= @chat.title %></h1>
+
+  <div id="messages" class="mb-4">
+    <% if @messages.empty? %>
+      <p class="text-muted">
+        Hi! I'm your Coach. Tell me what you'd like to achieve, and we'll build your plan together.
+      </p>
+    <% end %>
+
     <% @messages.each do |message| %>
-      <div class="p-3 mb-2 rounded <%= message.role == 'user' ? 'bg-primary text-white ms-5' : 'bg-light me-5' %>">
-        <%= simple_format(message.content) %>
-      </div>
+      <% next if message.content.blank? %>
+
+      <% if message.role == "user" %>
+        <div class="d-flex justify-content-end mb-2">
+          <div class="bg-light px-3 pt-3 pb-1 rounded-4">
+            <%= raw(render_markdown(message.content)) %>
+          </div>
+        </div>
+      <% else %>
+        <div class="d-flex justify-content-start mb-4">
+          <div class="px-3 pt-3 pb-1">
+            <%= raw(render_markdown(message.content)) %>
+          </div>
+        </div>
+      <% end %>
     <% end %>
   </div>
 
-  <%= form_with url: chat_messages_path(@chat), scope: :message do |f| %>
-    <%= f.text_area :content, class: "form-control mb-2", rows: 3, placeholder: "Ask your coach..." %>
-    <%= f.submit "Send", class: "btn btn-primary" %>
+  <% if @chat.plan_proposed? %>
+    <div class="text-center my-3">
+      <%= button_to "Save my plan", chat_plans_path(@chat),
+                    class: "btn btn-success",
+                    data: {
+                      turbo_confirm: "Save my plan? Your current plan will be archived.",
+                      turbo_submits_with: "Creating your 3-month plan... this can take a minute ⏳"
+                    } %>
+    </div>
   <% end %>
+
+  <div id="new_message_container">
+    <%= simple_form_for [@chat, @message] do |f| %>
+      <%= f.input :content, label: false,
+                  placeholder: "Ask your coach...",
+                  input_html: { rows: 3 } %>
+      <%= f.button :submit, "Send", class: "btn btn-primary" %>
+    <% end %>
+  </div>
 </div>

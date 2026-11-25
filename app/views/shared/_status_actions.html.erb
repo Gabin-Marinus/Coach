@@ -1,0 +1,21 @@
+<div class="d-flex align-items-center gap-1 flex-wrap">
+  <%= status_badge(record.status) %>
+
+  <% if record.date <= Date.today %>
+    <% if record.status == "planned" %>
+      <%= button_to "Done", polymorphic_path(record), method: :patch,
+                    params: { status: "done" },
+                    class: "btn btn-sm btn-outline-success",
+                    form: { class: "d-inline" } %>
+      <%= button_to "Skip", polymorphic_path(record), method: :patch,
+                    params: { status: "skipped" },
+                    class: "btn btn-sm btn-outline-warning",
+                    form: { class: "d-inline" } %>
+    <% else %>
+      <%= button_to "Undo", polymorphic_path(record), method: :patch,
+                    params: { status: "planned" },
+                    class: "btn btn-sm btn-link text-muted",
+                    form: { class: "d-inline" } %>
+    <% end %>
+  <% end %>
+</div>

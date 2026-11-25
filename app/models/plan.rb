@@ -3,19 +3,14 @@ class Plan < ApplicationRecord
   has_many :workouts, dependent: :destroy
   has_many :meals, dependent: :destroy
 
-  GOALS = {
-    "lose_fat" => "Lose weight / body fat",
-    "build_muscle" => "Build muscle",
-    "maintain" => "Maintain my weight",
-    "get_stronger" => "Get stronger",
-    "improve_endurance" => "Improve endurance / cardio fitness",
-    "improve_mobility" => "Improve flexibility and mobility",
-    "general_health" => "Feel healthier overall"
-  }.freeze
-
   STATUSES = %w[active archived].freeze
+  DURATION = 3.months
 
-  validates :goal, presence: true, inclusion: { in: GOALS.keys }
+  # Take the user's current goals if none were given
+  before_validation { self.goals = user.goals if goals.blank? && user }
+
+  validates :goals, presence: true
+  validate :goals_are_valid
   validates :status, inclusion: { in: STATUSES }
   validates :start_date, :end_date, presence: true
   validate :end_date_after_start_date
@@ -24,11 +19,33 @@ class Plan < ApplicationRecord
 
   after_create :archive_previous_plans
 
-  def goal_label
-    GOALS[goal]
+  def goal_labels
+    goals.map { |g| User::GOALS[g] }
+  end
+
+  def ended?
+    end_date < Date.today
+  end
+
+  def total_weeks
+    ((end_date - start_date).to_i / 7) + 1
+  end
+
+  def current_week
+    (((Date.today - start_date).to_i / 7) + 1).clamp(1, total_weeks)
+  end
+
+  def week_dates(number)
+    first_day = start_date + (number - 1).weeks
+    first_day..[first_day + 6.days, end_date].min
   end
 
   private
+
+  def goals_are_valid
+    invalid = goals - User::GOALS.keys
+    errors.add(:goals, "has invalid options: #{invalid.join(', ')}") if invalid.any?
+  end
 
   def end_date_after_start_date
     return if start_date.blank? || end_date.blank?

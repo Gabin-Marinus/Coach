@@ -1,0 +1,68 @@
+<div class="container py-4" style="max-width: 900px;">
+  <%= link_to "← My profile", profile_path, class: "text-muted text-decoration-none" %>
+  <h1 class="h3 my-3">My meal plan</h1>
+
+  <% if @plan.nil? %>
+    <p class="text-muted">You don't have a plan yet. Chat with your coach to create one.</p>
+    <%= button_to "New chat", chats_path, class: "btn btn-primary" %>
+  <% else %>
+    <p class="text-muted mb-0">
+      <%= @plan.goal_labels.join(", ") %> ·
+      <%= @plan.start_date.strftime("%b %-d, %Y") %> – <%= @plan.end_date.strftime("%b %-d, %Y") %>
+    </p>
+
+    <%= render "week_navigation", plan: @plan, week: @week %>
+
+    <% @dates.each do |date| %>
+      <% day_meals = (@meals_by_date[date] || []).sort_by { |meal| Meal::MEAL_TYPES.keys.index(meal.meal_type) || 99 } %>
+
+      <div class="card mb-3 <%= 'border-primary' if date == Date.today %>">
+        <div class="card-header d-flex justify-content-between">
+          <strong><%= date.strftime("%A, %b %-d") %></strong>
+          <span class="text-muted small">
+            <%= day_meals.sum { |meal| meal.calories.to_i } %> kcal ·
+            P <%= day_meals.sum { |meal| meal.protein_g.to_i } %> g ·
+            C <%= day_meals.sum { |meal| meal.carbs_g.to_i } %> g ·
+            F <%= day_meals.sum { |meal| meal.fat_g.to_i } %> g
+          </span>
+        </div>
+
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Meal</th>
+              <th>Dish</th>
+              <th>kcal</th>
+              <th>Protein</th>
+              <th>Carbs</th>
+              <th>Fat</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% day_meals.each do |meal| %>
+              <tr>
+                <td><%= Meal::MEAL_TYPES[meal.meal_type] %></td>
+                <td>
+                  <strong><%= meal.name %></strong>
+                  <div class="small text-muted"><%= meal.description %></div>
+                  <% if meal.recipe.present? %>
+                    <details class="small">
+                      <summary>Recipe</summary>
+                      <%= meal.recipe %>
+                    </details>
+                  <% end %>
+                </td>
+                <td><%= meal.calories %></td>
+                <td><%= meal.protein_g %> g</td>
+                <td><%= meal.carbs_g %> g</td>
+                <td><%= meal.fat_g %> g</td>
+                  <td><%= render "shared/status_actions", record: meal %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+</div>
