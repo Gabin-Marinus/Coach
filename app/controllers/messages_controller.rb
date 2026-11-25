@@ -1,6 +1,6 @@
 class MessagesController < ApplicationController
   def create
-    @chat = current_user.chats.find(params[:chat_id])
+    @chat = current_user.chats.plan_chats.find(params[:chat_id])
     content = message_params[:content]
 
     if content.blank?

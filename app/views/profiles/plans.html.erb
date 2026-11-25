@@ -1,0 +1,42 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">All plans</h1>
+      <p class="page-subtitle">Every 3-month plan you've made with your coach.</p>
+    </div>
+    <%= button_to "New plan", chats_path, method: :post, class: "btn btn-primary" %>
+  </div>
+
+  <% if @plans.empty? %>
+    <%= render "no_plan" %>
+  <% end %>
+
+  <% @plans.each do |plan| %>
+    <% workouts_done = @workout_counts[[plan.id, "done"]].to_i %>
+    <% workouts_total = Workout::STATUSES.sum { |s| @workout_counts[[plan.id, s]].to_i } %>
+    <% meals_done = @meal_counts[[plan.id, "done"]].to_i %>
+    <% meals_total = Meal::STATUSES.sum { |s| @meal_counts[[plan.id, s]].to_i } %>
+    <% total = workouts_total + meals_total %>
+    <% percent = total.zero? ? 0 : (100.0 * (workouts_done + meals_done) / total).round %>
+    <% current = plan == @user.current_plan %>
+
+    <%= link_to plan_profile_path(current ? {} : { plan_id: plan.id }),
+                class: "plan-card card p-4 mb-3 text-decoration-none #{'card-today' if current}" do %>
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <p class="page-eyebrow mb-1"><%= plan.timeframe %></p>
+          <h2 class="h4 fw-bold mb-1"><%= plan.title %> <%= plan_status_badge(plan) %></h2>
+          <p class="text-muted mb-0"><%= plan.goal_labels.join(" · ") %></p>
+        </div>
+        <span class="plan-card-arrow">→</span>
+      </div>
+
+      <div class="d-flex flex-wrap gap-4 mt-3 small">
+        <span><strong><%= workouts_done %></strong>/<%= workouts_total %> workouts done</span>
+        <span><strong><%= meals_done %></strong>/<%= meals_total %> meals done</span>
+        <span class="ms-auto fw-bold"><%= percent %>%</span>
+      </div>
+      <div class="plan-progress mt-2"><div style="width: <%= percent %>%"></div></div>
+    <% end %>
+  <% end %>
+</div>

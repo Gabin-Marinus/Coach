@@ -1,6 +1,6 @@
 class PlansController < ApplicationController
   def create
-    @chat = current_user.chats.find(params[:chat_id])
+    @chat = current_user.chats.plan_chats.find(params[:chat_id])
 
     unless current_user.ready_for_plan?
       redirect_to edit_profile_path, alert: "Please complete your profile and goals before saving a plan."

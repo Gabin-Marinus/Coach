@@ -1,0 +1,22 @@
+<%# Floating coach button (bottom right) and the side panel it opens %>
+<button type="button" class="coach-fab" data-bs-toggle="offcanvas" data-bs-target="#coachPanel"
+        aria-controls="coachPanel" aria-label="Ask your coach">
+  <i class="fa-solid fa-comment-dots"></i>
+  <span class="coach-fab-label">Coach</span>
+</button>
+
+<div class="offcanvas offcanvas-end coach-panel" tabindex="-1" id="coachPanel" aria-labelledby="coachPanelLabel">
+  <div class="offcanvas-header">
+    <div>
+      <h2 class="offcanvas-title" id="coachPanelLabel"><span class="navbar-logo"></span> Your coach</h2>
+      <p class="coach-panel-subtitle">Knows your profile and your current plan</p>
+    </div>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <%# Loads the conversation only when the panel is opened %>
+    <%= turbo_frame_tag "coach", src: coach_path, loading: :lazy, target: "_top", class: "coach-frame" do %>
+      <p class="p-4 text-muted small">Loading your coach…</p>
+    <% end %>
+  </div>
+</div>

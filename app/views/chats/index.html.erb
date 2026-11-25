@@ -1,13 +1,17 @@
-<div class="container my-4">
-  <h1>My coaching chats</h1>
-  <%= button_to "New chat", chats_path, method: :post, class: "btn btn-primary mb-3" %>
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">My coaching chats</h1>
+    <%= button_to "New chat", chats_path, method: :post, class: "btn btn-primary" %>
+  </div>
 
-  <ul class="list-group">
-    <% @chats.each do |chat| %>
-      <li class="list-group-item d-flex justify-content-between">
-        <%= link_to (chat.title.presence || "New chat"), chat_path(chat) %>
-        <%= button_to "Delete", chat_path(chat), method: :delete, class: "btn btn-sm btn-outline-danger" %>
-      </li>
-    <% end %>
-  </ul>
+  <div class="card">
+    <ul class="list-group list-group-flush">
+      <% @chats.each do |chat| %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <%= link_to (chat.title.presence || "New chat"), chat_path(chat), class: "fw-semibold text-decoration-none" %>
+          <%= button_to "Delete", chat_path(chat), method: :delete, class: "btn btn-sm btn-outline-secondary" %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
 </div>

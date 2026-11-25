@@ -1,0 +1,22 @@
+<%# Title of the plan pages: "Plan #1", its dates, goals and the All / Workouts / Meals switch %>
+<div class="page-header">
+  <div>
+    <p class="page-eyebrow">
+      <%= plan.timeframe %><%= " · Week #{plan.current_week} of #{plan.total_weeks}" unless plan.ended? %>
+    </p>
+    <h1 class="page-title">
+      <%= plan.title %><%= " · #{section}" if section %>
+      <%= plan_status_badge(plan) unless plan.status == "active" && !plan.ended? %>
+    </h1>
+    <p class="page-subtitle"><%= plan.goal_labels.join(" · ") %></p>
+  </div>
+
+  <div class="btn-group btn-group-sm" role="group" aria-label="Plan view">
+    <%= link_to "All", plan_profile_path(plan_params(week)),
+                class: "btn #{section.nil? ? 'btn-primary' : 'btn-outline-secondary'}" %>
+    <%= link_to "Workouts", workouts_profile_path(plan_params(week)),
+                class: "btn #{section == 'Workouts' ? 'btn-primary' : 'btn-outline-secondary'}" %>
+    <%= link_to "Meals", meals_profile_path(plan_params(week)),
+                class: "btn #{section == 'Meals' ? 'btn-primary' : 'btn-outline-secondary'}" %>
+  </div>
+</div>

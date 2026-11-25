@@ -1,0 +1,47 @@
+<% current = user.current_weight_kg %>
+<% target = user.target_weight_kg %>
+
+<section class="dash-goal">
+  <% if plan %>
+    <p class="dash-goal-plan"><strong><%= plan.title %></strong> · <%= plan.timeframe %></p>
+  <% end %>
+
+  <div class="dash-goal-weights">
+    <div>
+      <p class="dash-goal-label">Current</p>
+      <p class="dash-goal-value"><%= current ? number_with_precision(current, precision: 1, strip_insignificant_zeros: true) : "–" %><small>kg</small></p>
+    </div>
+    <span class="dash-goal-arrow">→</span>
+    <div>
+      <p class="dash-goal-label">Goal</p>
+      <p class="dash-goal-value text-accent"><%= target ? number_with_precision(target, precision: 1, strip_insignificant_zeros: true) : "–" %><small>kg</small></p>
+    </div>
+  </div>
+
+  <% if current && target && current != target %>
+    <p class="dash-goal-togo">
+      <%= number_with_precision((current - target).abs, precision: 1, strip_insignificant_zeros: true) %> kg
+      to <%= current > target ? "lose" : "gain" %>
+    </p>
+  <% end %>
+
+  <% if user.goals.any? %>
+    <div class="dash-goal-pills">
+      <% user.goals.each do |goal| %>
+        <span class="dash-pill"><%= User::GOALS[goal] %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if plan %>
+    <% total_days = (plan.end_date - plan.start_date).to_i + 1 %>
+    <% days_in = (Date.today - plan.start_date).to_i.clamp(0, total_days) %>
+    <div class="dash-goal-progress">
+      <div class="d-flex justify-content-between">
+        <span>Week <%= plan.current_week %> of <%= plan.total_weeks %></span>
+        <span><%= (plan.end_date - Date.today).to_i.clamp(0, total_days) %> days left</span>
+      </div>
+      <div class="dash-progress"><div style="width: <%= (100.0 * days_in / total_days).round %>%"></div></div>
+    </div>
+  <% end %>
+</section>

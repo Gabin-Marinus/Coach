@@ -1,2 +1,103 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<% content_for :head do %>
+  <%# Keep the scroll position when marking something as done or skipped %>
+  <%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+<% end %>
+
+<div class="page">
+  <% if !user_signed_in? %>
+    <div class="dash-hero">
+      <p class="page-eyebrow">Your AI fitness coach</p>
+      <h1 class="dash-title">Train. Eat. <span class="dash-highlight">Progress.</span></h1>
+      <p class="dash-muted">A personal 3-month plan for your workouts and meals, one day at a time.</p>
+      <div class="d-flex gap-2 mt-4">
+        <%= link_to "Get started", new_user_registration_path, class: "btn btn-primary" %>
+        <%= link_to "Log in", new_user_session_path, class: "btn btn-outline-secondary" %>
+      </div>
+    </div>
+  <% else %>
+    <header class="mb-4">
+      <p class="page-eyebrow"><%= @date.strftime("%A, %B %-d") %></p>
+      <h1 class="page-title"><%= @date == Date.today ? "Today" : @date.strftime("%A") %></h1>
+    </header>
+
+    <%= render "pages/goal_card", user: @user, plan: @plan %>
+
+    <% if @plan.nil? %>
+      <div class="dash-card dash-empty">
+        <% if @user.ready_for_plan? %>
+          <h2 class="dash-card-title">No plan yet</h2>
+          <p class="dash-muted">Chat with your coach to build your 3-month plan.</p>
+          <%= button_to "Create my plan", chats_path, method: :post, class: "btn btn-primary" %>
+        <% else %>
+          <h2 class="dash-card-title">Let's get you set up</h2>
+          <p class="dash-muted">Complete your profile and goals so your coach can build your plan.</p>
+          <%= link_to "Complete my profile", edit_profile_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    <% else %>
+      <nav class="dash-day-nav">
+        <% if @date > @plan.start_date %>
+          <%= link_to "‹ #{(@date - 1).strftime('%a %-d')}", root_path(date: @date - 1), class: "dash-day-link" %>
+        <% else %>
+          <span></span>
+        <% end %>
+
+        <% if @date == Date.today %>
+          <span class="dash-day-current">Today</span>
+        <% else %>
+          <%= link_to "Back to today", root_path, class: "dash-day-link dash-day-today" %>
+        <% end %>
+
+        <% if @date < @plan.end_date %>
+          <%= link_to "#{(@date + 1).strftime('%a %-d')} ›", root_path(date: @date + 1), class: "dash-day-link" %>
+        <% else %>
+          <span></span>
+        <% end %>
+      </nav>
+
+      <% items = @workouts.to_a + @meals %>
+      <% done = items.count { |item| item.status == "done" } %>
+      <div class="dash-summary">
+        <span><strong><%= done %>/<%= items.size %></strong> done</span>
+        <span>
+          <%= @meals.sum { |m| m.calories.to_i } %> kcal ·
+          P <%= @meals.sum { |m| m.protein_g.to_i } %> g ·
+          C <%= @meals.sum { |m| m.carbs_g.to_i } %> g ·
+          F <%= @meals.sum { |m| m.fat_g.to_i } %> g
+        </span>
+      </div>
+
+      <h2 class="section-title">Workout</h2>
+      <% if @workouts.empty? %>
+        <div class="dash-card dash-item dash-rest">
+          <div>
+            <p class="dash-item-label">Rest day</p>
+            <p class="dash-muted mb-0">Recover, stretch and drink water.</p>
+          </div>
+        </div>
+      <% else %>
+        <% @workouts.each do |workout| %>
+          <%= render "pages/day_item", record: workout,
+                     label: "Workout",
+                     meta: (workout.duration_min ? "#{workout.duration_min} min" : nil),
+                     details: nil %>
+        <% end %>
+      <% end %>
+
+      <h2 class="section-title">Meals</h2>
+      <% if @meals.empty? %>
+        <p class="dash-muted">No meals planned for this day.</p>
+      <% end %>
+      <% @meals.each do |meal| %>
+        <%= render "pages/day_item", record: meal,
+                   label: Meal::MEAL_TYPES[meal.meal_type],
+                   meta: "#{meal.calories.to_i} kcal · P #{meal.protein_g.to_i} g · C #{meal.carbs_g.to_i} g · F #{meal.fat_g.to_i} g",
+                   details: meal.recipe %>
+      <% end %>
+
+      <div class="text-center mt-4">
+        <%= link_to "See my full plan →", plan_profile_path, class: "link-underline-accent" %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
