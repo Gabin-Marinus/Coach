@@ -4,7 +4,7 @@ class Plan < ApplicationRecord
   has_many :meals, dependent: :destroy
 
   STATUSES = %w[active archived].freeze
-
+  DURATION = 3.months
 
   # Take the user's current goals if none were given
   before_validation { self.goals = user.goals if goals.blank? && user }
@@ -21,6 +21,23 @@ class Plan < ApplicationRecord
 
   def goal_labels
     goals.map { |g| User::GOALS[g] }
+  end
+
+  def ended?
+    end_date < Date.today
+  end
+
+  def total_weeks
+    ((end_date - start_date).to_i / 7) + 1
+  end
+
+  def current_week
+    (((Date.today - start_date).to_i / 7) + 1).clamp(1, total_weeks)
+  end
+
+  def week_dates(number)
+    first_day = start_date + (number - 1).weeks
+    first_day..[first_day + 6.days, end_date].min
   end
 
   private

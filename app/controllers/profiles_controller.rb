@@ -17,10 +17,28 @@ class ProfilesController < ApplicationController
     end
   end
 
+  def workouts
+    load_week
+    @workouts_by_date = @plan ? @plan.workouts.where(date: @dates).order(:date).group_by(&:date) : {}
+  end
+
+  def meals
+    load_week
+    @meals_by_date = @plan ? @plan.meals.where(date: @dates).order(:date).group_by(&:date) : {}
+  end
+
   private
 
   def set_user
     @user = current_user
+  end
+
+  def load_week
+    @plan = @user.current_plan
+    return if @plan.nil?
+
+    @week = (params[:week] || @plan.current_week).to_i.clamp(1, @plan.total_weeks)
+    @dates = @plan.week_dates(@week)
   end
 
   def profile_params

@@ -16,7 +16,7 @@ class User < ApplicationRecord
     "male" => "Male"
   }.freeze
 
-   GOALS = {
+  GOALS = {
     "lose_fat" => "Lose weight / body fat",
     "build_muscle" => "Build muscle",
     "maintain" => "Maintain my weight",
@@ -185,11 +185,16 @@ class User < ApplicationRecord
     [profile_context, plans_context].join("\n\n")
   end
 
+  def ready_for_plan?
+    profile_complete? && goals.present?
+  end
+
   private
 
   def profile_context
     <<~TEXT
       ## User profile
+      - Goals: #{labels(GOALS, goals)}
       - Age: #{age || 'not informed'}
       - Sex: #{label(SEXES, sex)}
       - Height: #{height_cm ? "#{height_cm} cm" : 'not informed'}
@@ -222,10 +227,10 @@ class User < ApplicationRecord
       meals    = plan.meals.group(:status).count
 
       <<~TEXT
-        ### #{plan.goal_label} (#{plan.status})
+        ### #{plan.goal_labels.join(", ")} (#{plan.status})
         - Period: #{plan.start_date} to #{plan.end_date}
-        - Workouts: #{workouts['done'] || 0} done, #{workouts['skipped'] || 0} skipped, #{workouts['planned'] || 0} planned
-        - Meals: #{meals['done'] || 0} done, #{meals['skipped'] || 0} skipped, #{meals['planned'] || 0} planned
+        - Workouts: #{workouts["done"] || 0} done, #{workouts["skipped"] || 0} skipped, #{workouts["planned"] || 0} planned
+        - Meals: #{meals["done"] || 0} done, #{meals["skipped"] || 0} skipped, #{meals["planned"] || 0} planned
       TEXT
     end
 

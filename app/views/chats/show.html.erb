@@ -33,7 +33,10 @@
     <div class="text-center my-3">
       <%= button_to "Save my plan", chat_plans_path(@chat),
                     class: "btn btn-success",
-                    data: { turbo_confirm: "Save my plan? Your current plan will be archived." } %>
+                    data: {
+                      turbo_confirm: "Save my plan? Your current plan will be archived.",
+                      turbo_submits_with: "Creating your 3-month plan... this can take a minute ⏳"
+                    } %>
     </div>
   <% end %>
 
