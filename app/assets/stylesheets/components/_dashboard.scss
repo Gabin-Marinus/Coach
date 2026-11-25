@@ -1,0 +1,941 @@
+// ---------- Colours ----------
+$forest: #16382B;
+$forest-dark: #0F2A20;
+$mint: #8FD3AE;
+$emerald: #2E7D5B;
+$gold: #C8A465;
+$slate: #7D94A6;
+$ink: #14211C;
+$muted: #5F6B66;
+$line: #ECE9E1;
+$track: #ECEBE6;
+$card-border: #E7E3DA;
+$on-dark-muted: #A9C2B6;
+
+// The white card look, reused by every card
+@mixin card {
+  background: #FFFFFF;
+  border: 1px solid $card-border;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(30, 58, 70, 0.04), 0 4px 16px rgba(30, 58, 70, 0.05);
+}
+
+// ---------- Page layout ----------
+.app-shell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 24px 24px 64px;
+  min-height: 100vh;
+  color: $ink;
+}
+
+// ---------- Sidebar ----------
+.app-sidebar {
+  flex: 0 0 200px;
+  background: $forest;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(30, 58, 70, 0.04), 0 4px 16px rgba(30, 58, 70, 0.05);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 20px;
+  color: #FFFFFF;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: $mint;
+  color: $forest;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-label {
+  margin: 0;
+  padding: 8px 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #8FAA9C;
+}
+
+.main-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.05);
+  color: #E3ECE7;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+  }
+
+  &.active {
+    background: $mint;
+    border-color: $mint;
+    color: $forest;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+
+    &:hover {
+      background: #A3DDBE;
+      color: $forest;
+    }
+  }
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: $gold;
+  color: $forest;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-goal {
+  color: $on-dark-muted;
+  font-size: 12px;
+}
+
+// ---------- Main area ----------
+.app-main {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.page-date {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: $muted;
+}
+
+.page-title {
+  margin: 4px 0 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: $ink;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-main,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-main {
+  background: $forest;
+  color: #FFFFFF;
+  border: 1px solid $forest;
+
+  &:hover {
+    background: $forest-dark;
+    color: #FFFFFF;
+  }
+}
+
+.btn-ghost {
+  background: #FFFFFF;
+  color: $ink;
+  border: 1px solid #D9D5CB;
+
+  &:hover {
+    background: #F0EFEA;
+    color: $ink;
+  }
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #D9D5CB;
+  background: #FFFFFF;
+  color: $ink;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ---------- Goal card (dark) ----------
+.goal-card {
+  background: $forest;
+  color: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(30, 58, 70, 0.04), 0 4px 16px rgba(30, 58, 70, 0.05);
+  padding: 22px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+}
+
+.goal-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+}
+
+.goal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $on-dark-muted;
+}
+
+.goal-number {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+
+  span {
+    font-size: 15px;
+    font-weight: 600;
+    color: $on-dark-muted;
+    margin-left: 4px;
+    letter-spacing: 0;
+  }
+}
+
+.goal-chip {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: $mint;
+  background: rgba(143, 211, 174, 0.14);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.goal-progress {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.goal-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: $on-dark-muted;
+}
+
+.goal-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.goal-fill {
+  height: 10px;
+  border-radius: 999px;
+  background: $mint;
+}
+
+.goal-knob {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: $forest;
+  border: 3px solid $mint;
+}
+
+.goal-percent {
+  font-size: 14px;
+  font-weight: 700;
+
+  span {
+    font-weight: 500;
+    color: $on-dark-muted;
+  }
+}
+
+.goal-pace {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.goal-pace-sub {
+  font-size: 13px;
+  color: $on-dark-muted;
+}
+
+// ---------- Grid of cards ----------
+.dash-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.dash-left {
+  flex: 1 1 300px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dash-right {
+  flex: 999 1 460px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dash-card {
+  @include card;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-tile {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.green { background: #E6EFEA; color: $forest; }
+  &.gold  { background: #F5EEDF; color: #7A5C1E; }
+  &.slate { background: #EDF1F4; color: #4F6779; }
+  &.solid { width: 40px; height: 40px; border-radius: 12px; background: $forest; color: #FFFFFF; }
+}
+
+.card-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $muted;
+}
+
+.pill {
+  font-size: 12px;
+  font-weight: 700;
+  color: $ink;
+  background: #F0EEE8;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.card-h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: $ink;
+}
+
+.card-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: $muted;
+}
+
+// ---------- Workout ----------
+.exercise {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid $line;
+  font-size: 14px;
+
+  &:last-child { border-bottom: 1px solid $line; }
+
+  strong { font-weight: 700; }
+}
+
+// ---------- Nutrition ----------
+.nutrition-top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ring {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  flex: 0 0 112px;
+}
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-number {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ring-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: $muted;
+}
+
+.stat-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.big-stat {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.small-muted {
+  font-size: 13px;
+  color: $muted;
+}
+
+.macros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.macro-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 5px;
+
+  span:first-child { font-weight: 600; }
+  span:last-child { color: $muted; }
+}
+
+.bar {
+  height: 6px;
+  border-radius: 999px;
+  background: $track;
+}
+
+.bar-fill {
+  height: 6px;
+  border-radius: 999px;
+  background: $emerald;
+
+  &.gold  { background: $gold; }
+  &.slate { background: $slate; }
+}
+
+// ---------- Weather ----------
+.weather-now {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.weather-temp {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.weather-main {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.weather-next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid $line;
+  font-size: 13px;
+  color: $muted;
+
+  strong { color: $ink; }
+}
+
+// ---------- Cardio ----------
+.cardio-card {
+  @include card;
+  padding: 22px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.cardio-summary {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cardio-number {
+  margin-top: 4px;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+
+  span {
+    font-size: 15px;
+    font-weight: 600;
+    color: $muted;
+    margin-left: 4px;
+    letter-spacing: 0;
+  }
+}
+
+.cardio-next {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: $muted;
+
+  strong { color: $ink; }
+}
+
+.cardio-chart {
+  flex: 2 1 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 110px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid $line;
+}
+
+.chart-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+
+  .planned-label {
+    color: $muted;
+    font-weight: 600;
+  }
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 34px;
+  border-radius: 8px 8px 3px 3px;
+  background: $gold;
+
+  &.planned {
+    background: #FBF7EE;
+    border: 2px dashed #D9C291;
+  }
+
+  &.empty {
+    height: 4px;
+    border-radius: 3px;
+    background: #E1DED6;
+  }
+}
+
+.chart-days {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $muted;
+  text-align: center;
+
+  span { flex: 1; }
+  .today { color: $ink; font-weight: 800; }
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: $muted;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: $gold;
+
+    &.planned {
+      background: transparent;
+      border: 2px dashed #D9C291;
+    }
+  }
+}
+
+// ---------- Coach card ----------
+.coach-card {
+  @include card;
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.coach-title {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: $ink;
+}
+
+.coach-summary {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+}
+
+.check-dot {
+  flex: 0 0 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #E6EFEA;
+  color: $forest;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weekly-goals {
+  border-top: 1px solid $line;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .card-label { margin-bottom: 8px; }
+}
+
+.goal-row {
+  display: grid;
+  grid-template-columns: 130px 100px minmax(0, 1fr) 82px;
+  align-items: center;
+  gap: 14px;
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.goal-row-value { font-weight: 700; }
+
+.status {
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: $forest;
+  background: #E6EFEA;
+
+  &.behind {
+    color: #6E5218;
+    background: #F5EEDF;
+  }
+}
+
+.tip-box {
+  background: #EEF3EF;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tip-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $forest;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.tip-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tip-number {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: $forest;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.why summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  color: $forest;
+  font-size: 13px;
+  font-weight: 700;
+
+  &::-webkit-details-marker { display: none; }
+}
+
+.chevron { transition: transform 0.2s; }
+.why[open] .chevron { transform: rotate(180deg); }
+
+.why-text {
+  margin-top: 8px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #3A4842;
+}
+
+.coach-footer {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sidebar-quote {
+  margin: 0 0 8px;
+  padding: 16px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #C9D8D0;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+// ---------- Today's meals ----------
+.text-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: $forest;
+  text-decoration: none;
+
+  &:hover {
+    color: $forest-dark;
+    text-decoration: underline;
+  }
+}
+
+.meal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.meal-tile {
+  flex: 1 1 200px;
+  background: #F7F6F2;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &.planned {
+    background: #FFFFFF;
+    border: 2px dashed #D9D5CB;
+    padding: 14px 16px;
+  }
+
+  .text-link {
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+}
+
+.meal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meal-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.eaten-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #E6EFEA;
+  color: $forest;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planned-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6E5218;
+  background: #F5EEDF;
+  padding: 3px 8px;
+  border-radius: 999px;
+}

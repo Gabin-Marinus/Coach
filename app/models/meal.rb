@@ -17,4 +17,13 @@ class Meal < ApplicationRecord
             numericality: { greater_than_or_equal_to: 0 }, allow_blank: true
 
   scope :for_date, ->(date) { where(date: date) }
+
+  # Breakfast, lunch, dinner, snack
+  def self.in_day_order(meals)
+    meals.sort_by { |meal| MEAL_TYPES.keys.index(meal.meal_type) || MEAL_TYPES.size }
+  end
+
+  def done?
+    status == "done"
+  end
 end

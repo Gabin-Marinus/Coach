@@ -1,0 +1,44 @@
+<section class="widget" aria-label="Today's meals" data-controller="meals">
+  <div class="widget-header">
+    <div class="widget-title">
+      <div class="widget-icon widget-icon-sand">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8"></path><path d="M4 3v5a3 3 0 0 0 6 0V3"></path><path d="M7 11v10"></path><path d="M17 21V3c-2.2 1.2-3 3.5-3 6v4h3"></path></svg>
+      </div>
+      <span class="widget-label">TODAY'S MEALS</span>
+      <span class="meal-undo-hint">Choose the meal you want to undo</span>
+    </div>
+    <%= link_to "See all meals →", weekly_meals_path, class: "widget-link widget-link-pill" %>
+  </div>
+
+  <% if meals.empty? %>
+    <p class="meal-info">No meals planned for today.</p>
+  <% else %>
+    <div class="meal-list">
+      <% meals.each do |meal| %>
+        <div class="meal-item <%= 'meal-item-planned' unless meal.done? %>">
+          <div class="meal-item-top">
+            <span class="meal-type"><%= Meal::MEAL_TYPES[meal.meal_type].to_s.upcase %></span>
+            <span class="meal-check" role="img" aria-label="Eaten"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+            <span class="meal-planned-tag"><%= meal.status == "skipped" ? "Skipped" : "Planned" %></span>
+          </div>
+          <span class="meal-name"><%= meal.name %></span>
+          <span class="meal-info"><%= number_with_delimiter(meal.calories.to_i) %> kcal · <%= meal.protein_g.to_i %> g protein</span>
+          <%= button_to "Mark as eaten →", meal_path(meal), method: :patch, params: { status: "done" },
+                        class: "meal-eaten-btn widget-link widget-link-pill", form: { class: "meal-action-form" } %>
+          <%= button_to "Undo this meal", meal_path(meal), method: :patch, params: { status: "planned" },
+                        class: "meal-undo-btn", form: { class: "meal-action-form" } %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if meals.any?(&:done?) %>
+      <div class="meals-footer">
+        <button type="button" class="undo-toggle" data-action="click->meals#toggleUndo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg>
+          <span class="undo-label">Undo</span>
+          <span class="undo-label-cancel">Cancel</span>
+        </button>
+      </div>
+    <% end %>
+  <% end %>
+</section>

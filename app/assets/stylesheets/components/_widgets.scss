@@ -1,0 +1,746 @@
+// White card used by every home widget
+.widget {
+  box-sizing: border-box;
+  background: #FFFFFF;
+  border: 1px solid #E7E3DA;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(30, 58, 70, 0.04), 0 4px 16px rgba(30, 58, 70, 0.05);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.widget-icon-sand {
+  background: #F5EEDF;
+  color: #7A5C1E;
+}
+
+.widget-icon-green {
+  background: #E6EFEA;
+  color: #16382B;
+}
+
+.widget-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #5F6B66;
+}
+
+.widget-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #16382B;
+  text-decoration: none;
+}
+
+.widget-link:hover {
+  color: #0F2A20;
+  text-decoration: none;
+}
+
+.widget-link-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin-right: -12px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.widget-link-pill:hover {
+  background: #16382B;
+  color: #FFFFFF;
+}
+
+.status-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6E5218;
+  background: #F5EEDF;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+// Weight goal (dark banner)
+.goal-card {
+  background: #16382B;
+  color: #FFFFFF;
+  border: 1px solid #16382B;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(30, 58, 70, 0.04), 0 4px 16px rgba(30, 58, 70, 0.05);
+  padding: 22px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+}
+
+.goal-current {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+}
+
+.goal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #A9C2B6;
+}
+
+.goal-number {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.goal-value {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-unit {
+  font-size: 15px;
+  font-weight: 600;
+  color: #A9C2B6;
+}
+
+.goal-change {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8FD3AE;
+  background: rgba(143, 211, 174, 0.14);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.goal-progress {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.goal-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: #A9C2B6;
+}
+
+.goal-bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.goal-bar-fill {
+  height: 10px;
+  border-radius: 999px;
+  background: #8FD3AE;
+}
+
+.goal-bar-dot {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #16382B;
+  border: 3px solid #8FD3AE;
+}
+
+.goal-progress-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.goal-progress-text span {
+  font-weight: 500;
+  color: #A9C2B6;
+}
+
+.goal-pace {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+}
+
+.goal-pace-date {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.goal-pace-text {
+  font-size: 13px;
+  color: #A9C2B6;
+}
+
+// Today's meals
+.meal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.meal-item {
+  flex: 1 1 200px;
+  box-sizing: border-box;
+  background: #F7F6F2;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meal-item-planned {
+  background: #FFFFFF;
+  border: 2px dashed #D9D5CB;
+  padding: 14px 16px;
+}
+
+.meal-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.meal-type {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #5F6B66;
+}
+
+.meal-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #E6EFEA;
+  color: #16382B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meal-planned-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6E5218;
+  background: #F5EEDF;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.meal-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.meal-info {
+  font-size: 13px;
+  color: #5F6B66;
+}
+
+.meal-eaten-link {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+// Today's nutrition
+.nutrition-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.kcal-ring {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+  height: 112px;
+}
+
+.kcal-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.kcal-value {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kcal-of {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5F6B66;
+}
+
+.kcal-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kcal-left-value {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.kcal-left-text {
+  font-size: 13px;
+  color: #5F6B66;
+}
+
+.kcal-meals {
+  margin-top: 6px;
+}
+
+.macro-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.macro-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.macro-name {
+  font-weight: 600;
+}
+
+.macro-amount {
+  color: #5F6B66;
+  font-variant-numeric: tabular-nums;
+}
+
+.macro-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #ECEBE6;
+}
+
+.macro-fill {
+  height: 6px;
+  border-radius: 999px;
+}
+
+.macro-fill-protein { background: #2E7D5B; }
+.macro-fill-carbs { background: #C8A465; }
+.macro-fill-fat { background: #7D94A6; }
+
+// Today's workout
+.workout-hero {
+  background: #16382B;
+  color: #FFFFFF;
+  border-radius: 14px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workout-hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.workout-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.workout-day {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #A9C2B6;
+}
+
+.workout-name {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.workout-stats {
+  display: flex;
+  gap: 22px;
+}
+
+.workout-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.workout-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.workout-stat-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #A9C2B6;
+}
+
+.workout-stat-label {
+  font-size: 12px;
+  color: #A9C2B6;
+}
+
+.workout-muscles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.muscle-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.muscle-tag {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.muscle-tag-main {
+  font-weight: 700;
+  color: #16382B;
+  background: #8FD3AE;
+}
+
+.workout-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid #ECE9E1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #16382B;
+}
+
+// Flip card (Today's workout widget)
+.flip-card {
+  flex: 1 1 300px;
+  min-width: 0;
+  perspective: 1400px;
+}
+
+.flip-card-inner {
+  display: grid;
+  height: 100%;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card.is-flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: none;
+  }
+}
+
+// The front "See suggested exercises" is now a real button
+button.workout-footer {
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid #ECE9E1;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.workout-footer {
+  border-radius: 10px;
+  padding-bottom: 10px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+button.workout-footer:hover {
+  background: #16382B;
+  color: #FFFFFF;
+  border-top-color: transparent;
+}
+
+.flip-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #D9D5CB;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #16382B;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.flip-back-button {
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.flip-back-button:hover {
+  background: #16382B;
+  border-color: #16382B;
+  color: #FFFFFF;
+}
+
+
+// Suggested exercises list (back of the card)
+.exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exercise-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 12px;
+  background: #F7F6F2;
+}
+
+.exercise-image {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #16382B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.exercise-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exercise-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.exercise-muscles {
+  font-size: 12px;
+  color: #5F6B66;
+}
+
+.exercise-sets {
+  font-size: 14px;
+  font-weight: 800;
+  color: #16382B;
+  font-variant-numeric: tabular-nums;
+}
+
+.meals-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// Today's meals: mark as eaten + undo
+.meals-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.undo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #D9D5CB;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #16382B;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.undo-toggle:hover,
+.is-undoing .undo-toggle {
+  background: #16382B;
+  border-color: #16382B;
+  color: #FFFFFF;
+}
+
+.undo-label-cancel,
+.meal-undo-hint {
+  display: none;
+}
+
+.is-undoing .undo-label {
+  display: none;
+}
+
+.is-undoing .undo-label-cancel {
+  display: inline;
+}
+
+.is-undoing .meal-undo-hint {
+  display: inline;
+  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9A4A12;
+}
+
+// Show the right pieces for eaten vs planned meals
+.meal-item .meal-planned-tag,
+.meal-item .meal-eaten-btn,
+.meal-item .meal-undo-btn {
+  display: none;
+}
+
+.meal-item.meal-item-planned .meal-check {
+  display: none;
+}
+
+.meal-item.meal-item-planned .meal-planned-tag {
+  display: inline-block;
+}
+
+.meal-item.meal-item-planned .meal-eaten-btn {
+  display: inline-flex;
+}
+
+.meal-eaten-btn {
+  align-self: flex-start;
+  margin: 2px 0 0 -12px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+// Undo mode: eaten meals get an outline and an "Undo this meal" button
+.is-undoing .meal-item:not(.meal-item-planned) {
+  outline: 2px solid #8FD3AE;
+  outline-offset: -2px;
+}
+
+.is-undoing .meal-item:not(.meal-item-planned) .meal-undo-btn {
+  display: inline-flex;
+}
+
+.meal-undo-btn {
+  align-self: flex-start;
+  align-items: center;
+  margin-top: 4px;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid #16382B;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: #16382B;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.meal-undo-btn:hover {
+  background: #16382B;
+  color: #FFFFFF;
+}

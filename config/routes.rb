@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
+  get "weekly-meals", to: "pages#weekly_meals", as: :weekly_meals
 
   resource :profile, only: [:show, :edit, :update] do
     get :plan

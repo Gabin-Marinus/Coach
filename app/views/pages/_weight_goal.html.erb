@@ -1,0 +1,40 @@
+<% current = user.current_weight_kg %>
+<% target = user.target_weight_kg %>
+<% progress = percent_of(plan.current_week, plan.total_weeks) %>
+<% days_left = [(plan.end_date - Date.today).to_i, 0].max %>
+
+<section class="goal-card" aria-label="Weight goal and plan progress">
+  <div class="goal-current">
+    <span class="goal-label">CURRENT WEIGHT</span>
+    <div class="goal-number">
+      <span class="goal-value"><%= current ? kg(current) : "–" %></span>
+      <span class="goal-unit">kg</span>
+    </div>
+    <% if current && target %>
+      <% to_go = (target - current).abs %>
+      <span class="goal-change">
+        <%= to_go.zero? ? "At your goal weight" : "Goal #{kg(target)} kg · #{kg(to_go)} kg to go" %>
+      </span>
+    <% else %>
+      <%= link_to "Set a goal weight →", edit_profile_path, class: "goal-change" %>
+    <% end %>
+  </div>
+
+  <div class="goal-progress">
+    <div class="goal-progress-labels">
+      <span>Start · <%= plan.start_date.strftime("%-d %b") %></span>
+      <span>End · <%= plan.end_date.strftime("%-d %b") %></span>
+    </div>
+    <div class="goal-bar">
+      <div class="goal-bar-fill" style="width: <%= progress %>%"></div>
+      <div class="goal-bar-dot" style="left: <%= progress %>%"></div>
+    </div>
+    <span class="goal-progress-text">Week <%= plan.current_week %> of <%= plan.total_weeks %> <span>· <%= progress %>% of your plan</span></span>
+  </div>
+
+  <div class="goal-pace">
+    <span class="goal-label">PLAN ENDS IN</span>
+    <span class="goal-pace-date"><%= pluralize(days_left, "day") %></span>
+    <span class="goal-pace-text"><%= plan.goal_labels.first %></span>
+  </div>
+</section>

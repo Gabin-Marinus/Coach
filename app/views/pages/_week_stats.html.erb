@@ -1,0 +1,43 @@
+<% avg_kcal = summary.average_eaten(:calories) %>
+<% target_kcal = summary.average_target(:calories) %>
+<% avg_protein = summary.average_eaten(:protein_g) %>
+<% target_protein = summary.average_target(:protein_g) %>
+<% finished = summary.finished_days.size %>
+<% protein_hit = finished - summary.protein_low_days.size %>
+<% no_data = "Fills in after your first full day" %>
+
+<div class="week-stats">
+  <div class="week-stat">
+    <span class="widget-label">AVG CALORIES / DAY</span>
+    <span class="week-stat-value"><%= avg_kcal ? number_with_delimiter(avg_kcal) : "–" %><span> kcal</span></span>
+    <% if avg_kcal %>
+      <% on_track = (avg_kcal - target_kcal).abs <= target_kcal * WeekSummary::TOLERANCE %>
+      <span class="week-stat-note <%= on_track ? 'week-stat-good' : 'week-stat-low' %>">Target <%= number_with_delimiter(target_kcal) %> · <%= on_track ? "on track" : (avg_kcal > target_kcal ? "above plan" : "below plan") %></span>
+    <% else %>
+      <span class="week-stat-note"><%= no_data %></span>
+    <% end %>
+  </div>
+  <div class="week-stat">
+    <span class="widget-label">AVG PROTEIN / DAY</span>
+    <span class="week-stat-value"><%= avg_protein || "–" %><span> g</span></span>
+    <% if avg_protein %>
+      <% low = avg_protein < target_protein * (1 - WeekSummary::TOLERANCE) %>
+      <span class="week-stat-note <%= low ? 'week-stat-low' : 'week-stat-good' %>">Target <%= target_protein %> · <%= low ? "low" : "on track" %></span>
+    <% else %>
+      <span class="week-stat-note"><%= no_data %></span>
+    <% end %>
+  </div>
+  <div class="week-stat">
+    <span class="widget-label">PROTEIN TARGET HIT</span>
+    <span class="week-stat-value"><%= finished.positive? ? "#{protein_hit} of #{finished}" : "–" %><span> days</span></span>
+    <span class="week-stat-note <%= 'week-stat-low' if summary.protein_low_days.any? %>">
+      <%= finished.zero? ? no_data : (summary.protein_low_days.any? ? "Missed #{summary.protein_low_days.map { |d| d.date.strftime('%a') }.to_sentence}" : "Every finished day") %>
+    </span>
+  </div>
+  <div class="week-stat">
+    <span class="widget-label">MEALS LOGGED</span>
+    <span class="week-stat-value"><%= summary.meals_logged %> of <%= summary.meals_due.size %><span> meals</span></span>
+    <% still_planned = summary.meals_due.count { |meal| meal.status == "planned" } %>
+    <span class="week-stat-note"><%= still_planned.zero? ? "All logged so far" : "#{pluralize(still_planned, 'meal')} still planned" %></span>
+  </div>
+</div>

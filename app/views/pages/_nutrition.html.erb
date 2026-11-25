@@ -1,0 +1,39 @@
+<% eaten = meals.select(&:done?) %>
+<% target_kcal = meals.sum { |meal| meal.calories.to_i } %>
+<% eaten_kcal = eaten.sum { |meal| meal.calories.to_i } %>
+<% kcal_left = target_kcal - eaten_kcal %>
+
+<section class="widget" aria-label="Today's nutrition">
+  <div class="widget-title">
+    <div class="widget-icon widget-icon-sand">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .3 1.5 1 2.5 2 3 0-3.5-.5-5.5.5-8z"></path></svg>
+    </div>
+    <span class="widget-label">TODAY'S NUTRITION</span>
+  </div>
+
+  <div class="nutrition-summary">
+    <div class="kcal-ring">
+      <svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="46" fill="none" stroke="#ECEBE6" stroke-width="10"></circle><circle cx="56" cy="56" r="46" fill="none" stroke="#2E7D5B" stroke-width="10" stroke-linecap="round" stroke-dasharray="<%= ring_dasharray(percent_of(eaten_kcal, target_kcal)) %>" transform="rotate(-90 56 56)"></circle></svg>
+      <div class="kcal-ring-center">
+        <span class="kcal-value"><%= number_with_delimiter(eaten_kcal) %></span>
+        <span class="kcal-of">of <%= number_with_delimiter(target_kcal) %> kcal</span>
+      </div>
+    </div>
+    <div class="kcal-left">
+      <span class="kcal-left-value"><%= number_with_delimiter(kcal_left.abs) %> kcal</span>
+      <span class="kcal-left-text"><%= kcal_left.negative? ? "over today's plan" : "left for today" %></span>
+      <span class="kcal-left-text kcal-meals"><%= eaten.size %> of <%= pluralize(meals.size, "meal") %> logged</span>
+    </div>
+  </div>
+
+  <div class="macro-list">
+    <% [["Protein", :protein_g, "protein"], ["Carbs", :carbs_g, "carbs"], ["Fat", :fat_g, "fat"]].each do |label, macro, css| %>
+      <% eaten_value = eaten.sum { |meal| meal.public_send(macro).to_i } %>
+      <% target_value = meals.sum { |meal| meal.public_send(macro).to_i } %>
+      <div class="macro">
+        <div class="macro-row"><span class="macro-name"><%= label %></span><span class="macro-amount"><%= eaten_value %> / <%= target_value %> g</span></div>
+        <div class="macro-bar"><div class="macro-fill macro-fill-<%= css %>" style="width: <%= percent_of(eaten_value, target_value) %>%"></div></div>
+      </div>
+    <% end %>
+  </div>
+</section>

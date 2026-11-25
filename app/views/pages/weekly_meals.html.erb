@@ -1,0 +1,35 @@
+<% content_for :full_width, "true" %>
+
+<header class="week-header">
+  <div>
+    <%= link_to root_path, class: "back-link" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      Home
+    <% end %>
+    <h1 class="week-title"><%= @summary&.days&.any?(&:today?) ? "This week's meals" : "Meals" %></h1>
+    <% if @summary %>
+      <p class="week-subtitle">
+        <%= @summary.first_date.strftime("%A %-d %b") %> – <%= @summary.last_date.strftime("%A %-d %b") %> ·
+        Week <%= @week %> of <%= @plan.total_weeks %>
+      </p>
+    <% end %>
+  </div>
+  <% if @plan %>
+    <%= link_to meals_profile_path(week: @week), class: "btn-coach btn-coach-dark" do %>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+      Log meals
+    <% end %>
+  <% end %>
+</header>
+
+<% if @plan.nil? %>
+  <%= render "pages/no_plan", user: current_user %>
+<% else %>
+  <%= render "profiles/week_navigation", plan: @plan, week: @week %>
+
+  <%= render "pages/week_stats", summary: @summary %>
+
+  <%= render "pages/week_table", summary: @summary %>
+
+  <%= render "pages/week_review", summary: @summary %>
+<% end %>

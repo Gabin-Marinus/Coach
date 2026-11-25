@@ -1,1 +1,160 @@
-// Specific CSS for your home-page
+// Home page only
+.home-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.home-date {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5F6B66;
+}
+
+.home-title {
+  margin: 4px 0 0;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #14211C;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-coach {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-coach-outline {
+  border: 1px solid #D9D5CB;
+  background: #FFFFFF;
+  color: #14211C;
+}
+
+.btn-coach-outline:hover {
+  background: #F0EFEA;
+  color: #14211C;
+  text-decoration: none;
+}
+
+.btn-coach-dark {
+  background: #16382B;
+  color: #FFFFFF;
+}
+
+.btn-coach-dark:hover {
+  background: #0F2A20;
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.btn-coach-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #D9D5CB;
+  background: #FFFFFF;
+  color: #14211C;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+// Nutrition + workout side by side, same size
+.home-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.home-row > .widget,
+.home-row > .flip-card {
+  flex: 1 1 300px;
+  min-width: 0;
+}// Specific CSS for your home-page
+
+// Mark as eaten / Undo are forms (button_to): let the button sit in the card as if the form wasn't there
+.meal-action-form {
+  display: contents;
+}
+
+// Workout card: details text and log buttons
+.workout-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #3A4842;
+  white-space: pre-line;
+}
+
+.workout-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.workout-actions form {
+  margin: 0;
+}
+
+// button_to renders <button>, reset the browser's button look
+button.btn-coach {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.btn-coach-dark {
+  border: 1px solid #16382B;
+}
+
+a.workout-footer-link {
+  text-decoration: none;
+  border-radius: 10px;
+  padding-bottom: 10px;
+}
+
+a.workout-footer-link:hover {
+  background: #16382B;
+  color: #FFFFFF;
+}
+
+// No plan yet
+.home-empty-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #14211C;
+}
+
+.home-empty-text {
+  margin: 0;
+  font-size: 14px;
+  color: #5F6B66;
+}
+
+.home-empty-action {
+  margin: 0;
+}

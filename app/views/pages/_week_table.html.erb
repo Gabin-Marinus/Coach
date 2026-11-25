@@ -1,0 +1,70 @@
+<% macros = [[:calories, "kcal"], [:protein_g, "g"], [:carbs_g, "g"], [:fat_g, "g"]] %>
+
+<section class="widget" aria-label="Meals this week">
+  <div class="widget-header week-table-header">
+    <div class="widget-title">
+      <div class="widget-icon widget-icon-sand">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8"></path><path d="M4 3v5a3 3 0 0 0 6 0V3"></path><path d="M7 11v10"></path><path d="M17 21V3c-2.2 1.2-3 3.5-3 6v4h3"></path></svg>
+      </div>
+      <span class="widget-label">MEALS THIS WEEK</span>
+    </div>
+    <div class="week-legend">
+      <span>Totals are what you ate · targets come from your planned meals</span>
+      <span class="legend-item"><span class="legend-dot legend-dot-low"></span>Below target</span>
+      <span class="legend-item"><span class="legend-dot legend-dot-high"></span>Above target</span>
+    </div>
+  </div>
+
+  <div class="week-table-scroll">
+    <table class="week-table">
+      <thead>
+        <tr>
+          <th scope="col">DAY</th>
+          <% Meal::MEAL_TYPES.each_value do |label| %>
+            <th scope="col"><%= label.upcase %></th>
+          <% end %>
+          <th scope="col" class="num">CALORIES</th>
+          <th scope="col" class="num">PROTEIN</th>
+          <th scope="col" class="num">CARBS</th>
+          <th scope="col" class="num">FAT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% summary.days.each do |day| %>
+          <tr class="<%= 'row-today' if day.today? %> <%= 'row-upcoming' if day.upcoming? %>">
+            <th scope="row">
+              <span class="day-name"><%= day.date.strftime("%a") %></span>
+              <span class="day-date"><%= day.date.strftime("%-d %b") %></span>
+              <% if day.today? %><span class="today-tag">Today</span><% end %>
+            </th>
+
+            <% Meal::MEAL_TYPES.each_key do |type| %>
+              <td>
+                <% day.meals_of_type(type).each do |meal| %>
+                  <span class="cell-meal <%= 'cell-meal-planned' unless meal.done? %>"><%= meal.name %></span>
+                  <% if meal.done? %>
+                    <span class="cell-kcal"><%= number_with_delimiter(meal.calories.to_i) %> kcal</span>
+                  <% elsif !day.upcoming? %>
+                    <span class="planned-tag"><%= meal.status.capitalize %></span>
+                  <% end %>
+                <% end %>
+              </td>
+            <% end %>
+
+            <% macros.each do |macro, unit| %>
+              <td class="num">
+                <% if day.upcoming? %>
+                  <span class="total"><%= number_with_delimiter(day.planned_total(macro)) %><%= " #{unit}" unless macro == :calories %></span>
+                <% else %>
+                  <span class="total <%= "total-#{day.status(macro)}" if day.status(macro) %>" title="Target <%= number_with_delimiter(day.planned_total(macro)) %> <%= unit %>">
+                    <%= number_with_delimiter(day.eaten_total(macro)) %><%= " #{unit}" unless macro == :calories %>
+                  </span>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
