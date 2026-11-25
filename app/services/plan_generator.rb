@@ -95,7 +95,7 @@ class PlanGenerator
       - Days are numbered 1 to 7. Day 1 is the first day of the plan.
       - Every day from 1 to 7 has exactly #{meals_per_day} meals.
       - All meals of the week are different: never repeat a meal.
-      - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(", ")}.
+      - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(', ')}.
       - Respect the user's diet, allergies, food dislikes and cooking time.
       - Keep descriptions to one sentence and recipes to at most 3 short steps.
     RULES

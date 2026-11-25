@@ -227,10 +227,10 @@ class User < ApplicationRecord
       meals    = plan.meals.group(:status).count
 
       <<~TEXT
-        ### #{plan.goal_labels.join(", ")} (#{plan.status})
+        ### #{plan.goal_labels.join(', ')} (#{plan.status})
         - Period: #{plan.start_date} to #{plan.end_date}
-        - Workouts: #{workouts["done"] || 0} done, #{workouts["skipped"] || 0} skipped, #{workouts["planned"] || 0} planned
-        - Meals: #{meals["done"] || 0} done, #{meals["skipped"] || 0} skipped, #{meals["planned"] || 0} planned
+        - Workouts: #{workouts['done'] || 0} done, #{workouts['skipped'] || 0} skipped, #{workouts['planned'] || 0} planned
+        - Meals: #{meals['done'] || 0} done, #{meals['skipped'] || 0} skipped, #{meals['planned'] || 0} planned
       TEXT
     end
 
