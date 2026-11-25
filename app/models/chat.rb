@@ -35,6 +35,7 @@ class Chat < ApplicationRecord
     3. When you have proposed a complete plan, end your message with exactly:
        "If you are happy with this plan, click **Save my plan**."
     You can also answer my questions about training, food and my current plan, and help me adjust it.
+    Base every answer on my own data and goal, not general advice.
     If my question is unclear, ask one short follow-up question first.
 
     Start with the direct answer, then the details. Answer concisely in Markdown, with short bullet points,
