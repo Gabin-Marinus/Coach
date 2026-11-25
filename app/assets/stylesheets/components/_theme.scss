@@ -158,3 +158,76 @@ details summary {
   font-weight: 700;
   letter-spacing: .02em;
 }
+
+// ---------- "Why this plan" ----------
+.plan-why {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: $fit-black;
+  color: $fit-white;
+
+  > summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+    &::after {
+      content: "+";
+      margin-left: auto;
+      color: $fit-green;
+      font-size: 20px;
+    }
+  }
+
+  &[open] > summary::after { content: "–"; }
+
+  strong { color: $fit-green; }
+}
+
+.plan-why-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: $fit-green;
+  color: $fit-black;
+  font-size: 13px;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.plan-why-body {
+  margin-top: 12px;
+  font-size: 14px;
+  color: rgba($fit-white, .85);
+
+  p { margin-bottom: 8px; }
+  ul { margin-bottom: 0; padding-left: 18px; }
+  li { margin-bottom: 6px; }
+}
+
+.plan-why-empty {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+
+  > span { display: flex; align-items: center; gap: 10px; }
+  form { margin: 0; }
+}
+
+.btn-neon {
+  background: $fit-green;
+  color: $fit-black;
+  font-weight: 700;
+
+  &:hover { background: $fit-green-40; color: $fit-black; }
+}

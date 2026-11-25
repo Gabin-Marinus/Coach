@@ -12,4 +12,13 @@ class PlansController < ApplicationController
   rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error
     redirect_to chat_path(@chat), alert: "Sorry, we couldn't save your plan. Please try again."
   end
+
+  # "Explain this plan" button, for plans saved before summaries existed
+  def summary
+    plan = current_user.plans.find(params[:id])
+    PlanSummary.new(plan).call
+    redirect_back fallback_location: plan_profile_path, notice: "Here's what your plan is based on."
+  rescue RubyLLM::Error
+    redirect_back fallback_location: plan_profile_path, alert: "Your coach is unavailable right now. Please try again."
+  end
 end

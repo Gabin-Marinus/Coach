@@ -20,3 +20,17 @@
                 class: "btn #{section == 'Meals' ? 'btn-primary' : 'btn-outline-secondary'}" %>
   </div>
 </div>
+
+<%# What the AI based the plan on (calories, protein, training...) %>
+<% if plan.summary.present? %>
+  <details class="plan-why" <%= "open" if section.nil? %>>
+    <summary><span class="plan-why-icon">i</span> Why this plan</summary>
+    <div class="plan-why-body"><%= raw(render_markdown(plan.summary)) %></div>
+  </details>
+<% else %>
+  <div class="plan-why plan-why-empty">
+    <span><span class="plan-why-icon">i</span> See what your coach based this plan on</span>
+    <%= button_to "Explain this plan", summary_plan_path(plan), class: "btn btn-sm btn-neon",
+                  data: { turbo_submits_with: "Thinking… ⏳" } %>
+  </div>
+<% end %>

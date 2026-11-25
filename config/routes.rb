@@ -20,6 +20,10 @@ Rails.application.routes.draw do
     post :reset
   end
 
+  resources :plans, only: [] do
+    post :summary, on: :member
+  end
+
   resources :workouts, only: [:update]
   resources :meals, only: [:update]
 

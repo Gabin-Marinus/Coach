@@ -73,6 +73,9 @@ class Plan < ApplicationRecord
       - Goals: #{goal_labels.join(', ').presence || 'none'}
       - Progress so far: #{coach_progress(workouts, 'workouts')}; #{coach_progress(meals, 'meals')}
 
+      ### Why this plan (shown to the user)
+      #{summary.presence || 'No summary yet.'}
+
       ### This week
       #{days.join("\n")}
     TEXT
