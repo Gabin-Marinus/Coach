@@ -27,6 +27,14 @@ class ProfilesController < ApplicationController
     @meals_by_date = @plan ? @plan.meals.where(date: @dates).order(:date).group_by(&:date) : {}
   end
 
+  def plan
+    load_week
+    return if @plan.nil?
+
+    @workouts_by_date = @plan.workouts.where(date: @dates).order(:date).group_by(&:date)
+    @meals_by_date    = @plan.meals.where(date: @dates).order(:date).group_by(&:date)
+  end
+
   private
 
   def set_user

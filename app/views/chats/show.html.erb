@@ -1,12 +1,20 @@
 <div class="container py-4" style="max-width: 800px;">
-  <%= link_to "← All chats", chats_path, class: "text-muted text-decoration-none" %>
+  <%= link_to "← My plan", plan_profile_path, class: "text-muted text-decoration-none" %>
 
   <h1 id="chat_title" class="h3 my-3"><%= @chat.title %></h1>
 
   <div id="messages" class="mb-4">
     <% if @messages.empty? %>
+      <% goals = current_user.goals.map { |g| User::GOALS[g] }.compact %>
       <p class="text-muted">
-        Hi! I'm your Coach. Tell me what you'd like to achieve, and we'll build your plan together.
+        <% if goals.any? %>
+          Hi! I'm your Coach. Based on your goals (<strong><%= goals.join(", ") %></strong>),
+          I'll build a 3-month training and nutrition plan for you. Say hi or tell me
+          anything you'd like me to take into account.
+        <% else %>
+          Hi! I'm your Coach. Before I can build your plan, please
+          <%= link_to "complete your profile", edit_profile_path %> and choose your goals.
+        <% end %>
       </p>
     <% end %>
 

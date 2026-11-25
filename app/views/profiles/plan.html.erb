@@ -1,0 +1,74 @@
+<div class="container py-4" style="max-width: 900px;">
+  <div class="d-flex justify-content-between align-items-center my-3">
+    <h1 class="h3 mb-0">My plan</h1>
+    <div class="d-flex gap-2">
+      <%= link_to "Workouts only", workouts_profile_path(week: @week), class: "btn btn-outline-primary btn-sm" %>
+      <%= link_to "Meals only", meals_profile_path(week: @week), class: "btn btn-outline-primary btn-sm" %>
+    </div>
+  </div>
+
+  <% if @plan.nil? %>
+    <p class="text-muted">You don't have a plan yet. Chat with your coach to create one.</p>
+    <%= button_to "New plan", chats_path, class: "btn btn-primary" %>
+  <% else %>
+    <p class="text-muted mb-0">
+      <%= @plan.goal_labels.join(", ") %> ·
+      <%= @plan.start_date.strftime("%b %-d, %Y") %> – <%= @plan.end_date.strftime("%b %-d, %Y") %>
+    </p>
+
+    <%= render "week_navigation", plan: @plan, week: @week %>
+
+    <% @dates.each do |date| %>
+      <% day_workouts = @workouts_by_date[date] || [] %>
+      <% day_meals = (@meals_by_date[date] || []).sort_by { |m| Meal::MEAL_TYPES.keys.index(m.meal_type) || 99 } %>
+
+      <div class="card mb-3 <%= 'border-primary' if date == Date.today %>">
+        <div class="card-header d-flex justify-content-between">
+          <strong><%= date.strftime("%A, %b %-d") %></strong>
+          <span class="text-muted small">
+            <%= day_meals.sum { |m| m.calories.to_i } %> kcal ·
+            P <%= day_meals.sum { |m| m.protein_g.to_i } %> g ·
+            C <%= day_meals.sum { |m| m.carbs_g.to_i } %> g ·
+            F <%= day_meals.sum { |m| m.fat_g.to_i } %> g
+          </span>
+        </div>
+
+        <div class="card-body">
+          <h6 class="text-uppercase text-muted small">Workout</h6>
+          <% if day_workouts.empty? %>
+            <p class="text-muted">Rest day</p>
+          <% else %>
+            <% day_workouts.each do |workout| %>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong><%= workout.name %></strong>
+                  <% if workout.duration_min %> · <%= workout.duration_min %> min<% end %>
+                  <div class="small text-muted"><%= workout.description %></div>
+                </div>
+                <%= render "shared/status_actions", record: workout %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <h6 class="text-uppercase text-muted small mt-3">Meals</h6>
+          <% day_meals.each do |meal| %>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="text-muted"><%= Meal::MEAL_TYPES[meal.meal_type] %>:</span>
+                <strong><%= meal.name %></strong>
+                <span class="small text-muted">· <%= meal.calories %> kcal</span>
+                <% if meal.recipe.present? %>
+                  <details class="small">
+                    <summary>Recipe</summary>
+                    <%= meal.recipe %>
+                  </details>
+                <% end %>
+              </div>
+              <%= render "shared/status_actions", record: meal %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
