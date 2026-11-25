@@ -23,6 +23,21 @@ class Plan < ApplicationRecord
     goals.map { |g| User::GOALS[g] }
   end
 
+  # 1 for the user's first plan, 2 for the second...
+  def number
+    user.plans.where(created_at: ..created_at).count
+  end
+
+  # "Plan #1"
+  def title
+    "Plan ##{number}"
+  end
+
+  # "Nov 25, 2026 – Feb 24, 2027"
+  def timeframe
+    "#{start_date.strftime('%b %-d, %Y')} – #{end_date.strftime('%b %-d, %Y')}"
+  end
+
   def ended?
     end_date < Date.today
   end
@@ -40,7 +55,56 @@ class Plan < ApplicationRecord
     first_day..[first_day + 6.days, end_date].min
   end
 
+  # Details of this plan for the coach: progress, this week, and today in full
+  def coach_context(today = Date.today)
+    week = week_dates(current_week)
+    week_workouts = workouts.where(date: week).order(:date).group_by(&:date)
+    week_meals = meals.where(date: week).order(:date).group_by(&:date)
+
+    days = week.map do |date|
+      day_workouts = week_workouts[date] || []
+      day_meals = (week_meals[date] || []).sort_by { |m| Meal::MEAL_TYPES.keys.index(m.meal_type) || 99 }
+      coach_day(date, day_workouts, day_meals, full: date == today)
+    end
+
+    <<~TEXT
+      ## Current plan: #{title} (#{timeframe})
+      - Today: #{today.strftime('%A, %b %-d, %Y')}, week #{current_week} of #{total_weeks}
+      - Goals: #{goal_labels.join(', ').presence || 'none'}
+      - Progress so far: #{coach_progress(workouts, 'workouts')}; #{coach_progress(meals, 'meals')}
+
+      ### Why this plan (shown to the user)
+      #{summary.presence || 'No summary yet.'}
+
+      ### This week
+      #{days.join("\n")}
+    TEXT
+  end
+
   private
+
+  def coach_progress(records, name)
+    counts = records.where(date: ..Date.today).group(:status).count
+    "#{name} #{counts['done'] || 0} done, #{counts['skipped'] || 0} skipped, #{counts['planned'] || 0} not marked"
+  end
+
+  def coach_day(date, day_workouts, day_meals, full:)
+    lines = ["#### #{date.strftime('%a %b %-d')}#{' (today)' if full}"]
+    if day_workouts.empty?
+      lines << "- Workout: rest day"
+    else
+      day_workouts.each do |w|
+        lines << "- Workout: #{w.name} (#{w.duration_min || '?'} min) [#{w.status}]"
+        lines << "  #{w.description}" if full && w.description.present?
+      end
+    end
+    day_meals.each do |m|
+      lines << "- #{Meal::MEAL_TYPES[m.meal_type]}: #{m.name} (#{m.calories} kcal, P #{m.protein_g} g, " \
+               "C #{m.carbs_g} g, F #{m.fat_g} g) [#{m.status}]"
+      lines << "  Recipe: #{m.recipe}" if full && m.recipe.present?
+    end
+    lines.join("\n")
+  end
 
   def goals_are_valid
     invalid = goals - User::GOALS.keys

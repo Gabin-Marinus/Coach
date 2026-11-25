@@ -1,10 +1,11 @@
-// Define variables for your color scheme
+// Brand palette: black + neon "fit green"
+$fit-white: #F5F5F2;
+$fit-green: #C6F432;
+$fit-green-40: #E8FBAD;
+$fit-black-88: #1F1F1F;
+$fit-black: #0A0A0A;
 
-// For example:
-$red: #FD1015;
-$blue: #0D6EFD;
-$yellow: #FFC65A;
-$orange: #E67E22;
-$green: #1EDD88;
-$gray: #0E0000;
-$light-gray: #F4F4F4;
+$red: #E5484D;
+$orange: #F59E0B;
+$gray: $fit-black;
+$light-gray: $fit-white;

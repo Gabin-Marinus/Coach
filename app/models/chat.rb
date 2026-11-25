@@ -3,6 +3,16 @@ class Chat < ApplicationRecord
   belongs_to :user
 
   DEFAULT_TITLE = "Untitled"
+  KINDS = %w[plan coach].freeze
+
+  # Coach button: keep conversations short to limit token usage
+  MAX_COACH_QUESTIONS = 10
+  MAX_QUESTION_LENGTH = 500
+
+  validates :kind, inclusion: { in: KINDS }
+
+  scope :plan_chats, -> { where(kind: "plan") }
+  scope :coach_chats, -> { where(kind: "coach") }
 
   TITLE_PROMPT = <<~PROMPT
     Generate a short, descriptive, 3-to-6-word title that summarizes the user question for a chat conversation.
@@ -48,8 +58,49 @@ class Chat < ApplicationRecord
     For questions outside fitness and nutrition, kindly bring the conversation back to my goal.
   PROMPT
 
+  COACH_PROMPT = <<~PROMPT
+    You are my personal fitness and nutrition coach inside a fitness app. You are friendly,
+    motivating and honest. I may be a beginner, so explain things simply.
+
+    Below you have my profile, my current plan (progress, this week's workouts and meals,
+    and today's details) and a summary of my previous plans.
+    Answer my questions about my plan: today's workout or meals, how to do an exercise,
+    swapping a meal or exercise, what to do if I missed a day, motivation, recovery and nutrition.
+    - Base every answer on my own profile and plan, not general advice.
+    - Never ask for information that is already in my profile or plan.
+    - When I want to swap something, suggest an option that respects my diet, allergies,
+      equipment, injuries and time, and keep the calories and macros close.
+    - You cannot change my plan in the app. If I want a completely new plan, tell me to click
+      **New plan** at the top of the page.
+    - If I have no current plan, help me with my profile and tell me to click **New plan**.
+
+    Start with the direct answer. Answer concisely in Markdown, with short bullet points,
+    in under 120 words unless I ask for more.
+    Use metric units (kg, cm, kcal) and reply in the language I write in.
+
+    Keep all advice within safe, healthy limits. For injuries, pain or medical conditions,
+    recommend seeing a doctor. For questions outside fitness and nutrition, kindly bring
+    the conversation back to my plan.
+  PROMPT
+
+  def coach?
+    kind == "coach"
+  end
+
   def instructions
-    [SYSTEM_PROMPT, user.coach_context].join("\n\n")
+    if coach?
+      [COACH_PROMPT, user.coach_context, user.current_plan&.coach_context].compact.join("\n\n")
+    else
+      [SYSTEM_PROMPT, user.coach_context].join("\n\n")
+    end
+  end
+
+  def questions_asked
+    messages.where(role: "user").count
+  end
+
+  def questions_left
+    [MAX_COACH_QUESTIONS - questions_asked, 0].max
   end
 
   def plan_proposed?

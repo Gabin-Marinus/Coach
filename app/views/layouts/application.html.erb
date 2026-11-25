@@ -27,4 +27,8 @@
     <%= render "shared/navbar" %>
     <%= render "shared/flashes" %>
     <%= yield %>
+
+    <% if user_signed_in? && !devise_controller? && controller_name != "chats" %>
+      <%= render "shared/coach_widget" %>
+    <% end %>
   </body>

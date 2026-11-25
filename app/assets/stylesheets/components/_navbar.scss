@@ -1,12 +1,60 @@
-.navbar-lewagon {
-  justify-content: space-between;
-  background: white;
-}
+// Black navbar with neon accents
+.navbar-coach {
+  padding: 12px 24px;
+  background: $fit-black;
 
-.navbar-lewagon .navbar-collapse {
-  flex-grow: 0;
-}
+  .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: $fit-white;
+  }
 
-.navbar-lewagon .navbar-brand img {
-  width: 40px;
+  .navbar-logo {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: $fit-green;
+  }
+
+  .navbar-toggler {
+    border-color: rgba($fit-white, .2);
+  }
+
+  .nav-link {
+    padding: 6px 12px !important;
+    border-radius: 50rem;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba($fit-white, .7);
+
+    &:hover { color: $fit-white; }
+
+    &.active {
+      background: rgba($fit-green, .12);
+      color: $fit-green;
+    }
+  }
+
+  .navbar-email {
+    font-size: 13px;
+    color: rgba($fit-white, .45);
+  }
+
+  .btn-neon {
+    background: $fit-green;
+    color: $fit-black;
+
+    &:hover { background: $fit-green-40; color: $fit-black; }
+  }
+
+  .btn-ghost {
+    border-color: rgba($fit-white, .25);
+    color: $fit-white;
+
+    &:hover { border-color: $fit-white; color: $fit-white; }
+  }
 }

@@ -1,7 +1,7 @@
-<div class="container py-4" style="max-width: 800px;">
-  <%= link_to "← My plan", plan_profile_path, class: "text-muted text-decoration-none" %>
+<div class="page">
+  <%= link_to "← My plan", plan_profile_path, class: "back-link" %>
 
-  <h1 id="chat_title" class="h3 my-3"><%= @chat.title %></h1>
+  <h1 id="chat_title" class="page-title mb-4"><%= @chat.title %></h1>
 
   <div id="messages" class="mb-4">
     <% if @messages.empty? %>
@@ -23,7 +23,7 @@
 
       <% if message.role == "user" %>
         <div class="d-flex justify-content-end mb-2">
-          <div class="bg-light px-3 pt-3 pb-1 rounded-4">
+          <div class="chat-bubble-user px-3 pt-3 pb-1">
             <%= raw(render_markdown(message.content)) %>
           </div>
         </div>
@@ -40,7 +40,7 @@
   <% if @chat.plan_proposed? %>
     <div class="text-center my-3">
       <%= button_to "Save my plan", chat_plans_path(@chat),
-                    class: "btn btn-success",
+                    class: "btn btn-success btn-lg",
                     data: {
                       turbo_confirm: "Save my plan? Your current plan will be archived.",
                       turbo_submits_with: "Creating your 3-month plan... this can take a minute ⏳"

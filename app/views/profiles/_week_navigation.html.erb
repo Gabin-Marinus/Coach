@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center my-3">
   <% if week > 1 %>
-    <%= link_to "← Previous week", url_for(week: week - 1), class: "btn btn-outline-secondary btn-sm" %>
+    <%= link_to "← Week #{week - 1}", url_for(plan_params(week - 1)), class: "btn btn-outline-secondary btn-sm" %>
   <% else %>
     <span></span>
   <% end %>
@@ -8,7 +8,7 @@
   <strong>Week <%= week %> of <%= plan.total_weeks %></strong>
 
   <% if week < plan.total_weeks %>
-    <%= link_to "Next week →", url_for(week: week + 1), class: "btn btn-outline-secondary btn-sm" %>
+    <%= link_to "Week #{week + 1} →", url_for(plan_params(week + 1)), class: "btn btn-outline-secondary btn-sm" %>
   <% else %>
     <span></span>
   <% end %>

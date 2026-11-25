@@ -1,6 +1,6 @@
 class PlansController < ApplicationController
   def create
-    @chat = current_user.chats.find(params[:chat_id])
+    @chat = current_user.chats.plan_chats.find(params[:chat_id])
 
     unless current_user.ready_for_plan?
       redirect_to edit_profile_path, alert: "Please complete your profile and goals before saving a plan."
@@ -11,5 +11,14 @@ class PlansController < ApplicationController
     redirect_to workouts_profile_path, notice: "Your 3-month plan was saved! 🎉"
   rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error
     redirect_to chat_path(@chat), alert: "Sorry, we couldn't save your plan. Please try again."
+  end
+
+  # "Explain this plan" button, for plans saved before summaries existed
+  def summary
+    plan = current_user.plans.find(params[:id])
+    PlanSummary.new(plan).call
+    redirect_back fallback_location: plan_profile_path, notice: "Here's what your plan is based on."
+  rescue RubyLLM::Error
+    redirect_back fallback_location: plan_profile_path, alert: "Your coach is unavailable right now. Please try again."
   end
 end

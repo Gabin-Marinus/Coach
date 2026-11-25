@@ -1,1 +1,256 @@
-// Specific CSS for your home-page
+// Dashboard / landing page (pages#home)
+// Layout, buttons and titles come from components/_theme.scss
+
+.dash-muted {
+  color: rgba($fit-black, 0.55);
+  font-size: 14px;
+}
+
+// ---------- Landing (logged out) ----------
+.dash-hero {
+  padding: 64px 0;
+}
+
+.dash-title {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.dash-highlight {
+  padding: 0 6px;
+  background: $fit-green;
+}
+
+// ---------- Goal card ----------
+.dash-goal-plan {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: rgba($fit-white, .6);
+
+  strong { color: $fit-white; }
+}
+
+.dash-goal {
+  margin-bottom: 24px;
+  padding: 24px;
+  border-radius: 20px;
+  background: $fit-black;
+  color: $fit-white;
+}
+
+.dash-goal-weights {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.dash-goal-label {
+  margin-bottom: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba($fit-white, 0.5);
+}
+
+.dash-goal-value {
+  margin-bottom: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.1;
+
+  small {
+    margin-left: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba($fit-white, 0.5);
+  }
+}
+
+.dash-goal-arrow {
+  font-size: 28px;
+  color: rgba($fit-white, 0.3);
+}
+
+.dash-goal-togo {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: $fit-green-40;
+}
+
+.dash-goal-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dash-pill {
+  padding: 4px 12px;
+  border: 1px solid rgba($fit-green, 0.5);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $fit-green;
+}
+
+.dash-goal-progress {
+  margin-top: 20px;
+  font-size: 13px;
+  color: rgba($fit-white, 0.6);
+}
+
+.dash-progress {
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: $fit-black-88;
+  overflow: hidden;
+
+  div {
+    height: 100%;
+    border-radius: 999px;
+    background: $fit-green;
+  }
+}
+
+// ---------- Day navigation + summary ----------
+.dash-day-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.dash-day-link {
+  color: rgba($fit-black, 0.6);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { color: $fit-black; }
+}
+
+.dash-day-current,
+.dash-day-today {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: $fit-black;
+  color: $fit-green;
+  font-weight: 700;
+
+  &:hover { color: $fit-green; }
+}
+
+.dash-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: $fit-green-40;
+  font-size: 14px;
+}
+
+// ---------- Cards ----------
+.dash-card {
+  margin-bottom: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba($fit-black, 0.08);
+  border-radius: 16px;
+  background: #FFFFFF;
+}
+
+.dash-card-title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.dash-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  border-left: 4px solid $fit-green;
+  transition: opacity 0.2s ease;
+}
+
+.dash-item-body { min-width: 0; }
+
+.dash-item-label {
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba($fit-black, 0.45);
+}
+
+.dash-item-name {
+  margin-bottom: 4px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.dash-item-meta {
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dash-item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+
+  form { margin: 0; }
+}
+
+.dash-item-done {
+  border-left-color: $fit-black;
+  opacity: 0.6;
+
+  .dash-item-name { text-decoration: line-through; }
+}
+
+.dash-item-skipped {
+  border-left-color: rgba($fit-black, 0.2);
+  opacity: 0.5;
+}
+
+.dash-rest { border-left-color: rgba($fit-black, 0.2); }
+
+.dash-status {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba($fit-black, 0.45);
+}
+
+.dash-status-done { color: $fit-black; }
+
+.dash-details {
+  margin-top: 6px;
+  font-size: 13px;
+
+  summary {
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.dash-item-actions .btn { min-width: 72px; }
+
+@media (max-width: 576px) {
+  .dash-title { font-size: 32px; }
+  .dash-goal-value { font-size: 32px; }
+  .dash-item { flex-direction: column; }
+  .dash-item-actions { flex-direction: row; align-items: center; }
+}

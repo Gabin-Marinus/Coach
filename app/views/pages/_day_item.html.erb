@@ -1,0 +1,41 @@
+<%# One workout or meal on the dashboard, with Done / Skip / Undo like the plan page %>
+<div class="dash-card dash-item dash-item-<%= record.status %>">
+  <div class="dash-item-body">
+    <p class="dash-item-label"><%= label %></p>
+    <h3 class="dash-item-name"><%= record.name %></h3>
+    <% if meta %>
+      <p class="dash-item-meta"><%= meta %></p>
+    <% end %>
+    <% if record.description.present? %>
+      <p class="dash-muted mb-0"><%= record.description %></p>
+    <% end %>
+    <% if details.present? %>
+      <details class="dash-details">
+        <summary>Recipe</summary>
+        <%= details %>
+      </details>
+    <% end %>
+  </div>
+
+  <div class="dash-item-actions">
+    <% if record.status != "planned" %>
+      <span class="dash-status dash-status-<%= record.status %>">
+        <%= record.status == "done" ? "✓ Done" : "Skipped" %>
+      </span>
+    <% end %>
+
+    <% if record.date <= Date.today %>
+      <% if record.status == "planned" %>
+        <%= button_to "Done", polymorphic_path(record), method: :patch,
+                      params: { status: "done" }, class: "btn btn-sm btn-primary" %>
+        <%= button_to "Skip", polymorphic_path(record), method: :patch,
+                      params: { status: "skipped" }, class: "btn btn-sm btn-outline-secondary" %>
+      <% else %>
+        <%= button_to "Undo", polymorphic_path(record), method: :patch,
+                      params: { status: "planned" }, class: "btn btn-sm btn-link text-muted" %>
+      <% end %>
+    <% else %>
+      <span class="dash-status">Upcoming</span>
+    <% end %>
+  </div>
+</div>

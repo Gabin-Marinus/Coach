@@ -1,26 +1,20 @@
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-  <div class="card shadow-sm p-4" style="max-width: 420px; width: 100%;">
-    <h2 class="text-center mb-1">Welcome to Coach 🤖</h2>
-    <p class="text-center text-muted mb-4">Log in to continue with your assistant</p>
+<div class="auth">
+  <div class="auth-card">
+    <span class="auth-badge">Welcome back</span>
+    <h1 class="auth-title">Log in</h1>
+    <p class="auth-subtitle">Pick up today's plan where you left off.</p>
 
     <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-      <div class="form-inputs">
-        <%= f.input :email,
-                    required: false,
-                    autofocus: true,
-                    input_html: { autocomplete: "email" } %>
-        <%= f.input :password,
-                    required: false,
-                    input_html: { autocomplete: "current-password" } %>
-        <%= f.input :remember_me, as: :boolean, label: "Remember me" if devise_mapping.rememberable? %>
-      </div>
+      <%= f.input :email, required: false, autofocus: true,
+                  input_html: { autocomplete: "email" } %>
+      <%= f.input :password, required: false,
+                  input_html: { autocomplete: "current-password" } %>
+      <%= f.input :remember_me, as: :boolean, label: "Remember me" if devise_mapping.rememberable? %>
 
-      <div class="form-actions">
-        <%= f.button :submit, "Log in", class: "btn btn-primary w-100 mt-2" %>
-      </div>
+      <%= f.button :submit, "Log in", class: "btn btn-primary w-100 mt-2" %>
     <% end %>
 
-    <div class="text-center mt-3 small">
+    <div class="auth-links">
       <%= render "devise/shared/links" %>
     </div>
   </div>

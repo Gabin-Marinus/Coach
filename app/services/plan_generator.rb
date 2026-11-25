@@ -13,16 +13,26 @@ class PlanGenerator
     second_week = ask_json(second_week_prompt(first_week["meals"]))
     meal_weeks  = [first_week["meals"], second_week["meals"]]
 
-    ActiveRecord::Base.transaction do
+    plan = ActiveRecord::Base.transaction do
       # Plan copies the user's goals automatically (before_validation in Plan)
       plan = @user.plans.create!(start_date: start_date, end_date: end_date)
       create_workouts(plan, first_week["workouts"])
       create_meals(plan, meal_weeks)
       plan
     end
+
+    add_summary(plan)
+    plan
   end
 
   private
+
+  # "Why this plan" text; the plan is still saved if this fails (it can be generated later)
+  def add_summary(plan)
+    PlanSummary.new(plan, conversation: conversation).call
+  rescue RubyLLM::Error, ActiveRecord::RecordInvalid => e
+    Rails.logger.warn("[PlanGenerator] Plan summary failed: #{e.class}: #{e.message}")
+  end
 
   def start_date
     Date.today

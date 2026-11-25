@@ -1,12 +1,17 @@
-<div class="container my-5" style="max-width: 720px;">
-  <h1 class="mb-2">Tell us about you</h1>
-  <p class="text-muted mb-4">We use this to build your meal and training plan.</p>
+<div class="page">
+  <%= link_to "← My profile", profile_path, class: "back-link" %>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tell us about you</h1>
+      <p class="page-subtitle">We use this to build your meal and training plan.</p>
+    </div>
+  </div>
 
   <%= simple_form_for @user, url: profile_path, method: :patch do |f| %>
     <%= f.error_notification %>
 
     <%# ---------- 1. About you ---------- %>
-    <h4 class="mt-4 mb-3">1. About you</h4>
+    <h2 class="section-title mt-5">1. About you</h2>
 
     <%= f.input :birth_date, as: :date, html5: true, required: true %>
 
@@ -34,7 +39,7 @@
                 required: true %>
 
     <%# ---------- 2. Goal ---------- %>
-    <h4 class="mt-5 mb-3">2. Your goal</h4>
+    <h2 class="section-title mt-5">2. Your goal</h2>
 
     <%= f.input :goals, label: "What are your goals?",
                 as: :check_boxes,
@@ -45,7 +50,7 @@
                 input_html: { min: 30, max: 300, step: 0.1 } %>
 
     <%# ---------- 3. Food ---------- %>
-    <h4 class="mt-5 mb-3">3. Food</h4>
+    <h2 class="section-title mt-5">3. Food</h2>
 
     <%= f.input :diet_type, label: "Diet",
                 collection: User::DIET_TYPES.invert,
@@ -72,7 +77,7 @@
                 required: true %>
 
     <%# ---------- 4. Training ---------- %>
-    <h4 class="mt-5 mb-3">4. Training</h4>
+    <h2 class="section-title mt-5">4. Training</h2>
 
     <%= f.input :fitness_level, label: "Your fitness level",
                 prompt: "Choose one",

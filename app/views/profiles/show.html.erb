@@ -1,8 +1,6 @@
-<div class="container my-5" style="max-width: 720px;">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">My profile</h1>
-    <div class="d-flex gap-2 my-3">
-</div>
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">My profile</h1>
     <%= link_to "Edit profile", edit_profile_path, class: "btn btn-primary" %>
   </div>
 
@@ -15,7 +13,7 @@
 
   <div class="card mb-4">
     <div class="card-body">
-      <h4 class="card-title mb-3">About you</h4>
+      <h2 class="section-title mt-0">About you</h2>
       <dl class="row mb-0">
         <dt class="col-sm-5">Age</dt>
         <dd class="col-sm-7"><%= @user.age || "–" %></dd>
@@ -37,7 +35,7 @@
 
   <div class="card mb-4">
     <div class="card-body">
-      <h4 class="card-title mb-3">Your goal</h4>
+      <h2 class="section-title mt-0">Your goal</h2>
       <dl class="row mb-0">
         <dt class="col-sm-5">Goals</dt>
         <dd class="col-sm-7"><%= option_labels(User::GOALS, @user.goals) %></dd>
@@ -50,7 +48,7 @@
 
   <div class="card mb-4">
     <div class="card-body">
-      <h4 class="card-title mb-3">Food</h4>
+      <h2 class="section-title mt-0">Food</h2>
       <dl class="row mb-0">
         <dt class="col-sm-5">Diet</dt>
         <dd class="col-sm-7"><%= option_label(User::DIET_TYPES, @user.diet_type) %></dd>
@@ -72,7 +70,7 @@
 
   <div class="card mb-4">
     <div class="card-body">
-      <h4 class="card-title mb-3">Training</h4>
+      <h2 class="section-title mt-0">Training</h2>
       <dl class="row mb-0">
         <dt class="col-sm-5">Fitness level</dt>
         <dd class="col-sm-7"><%= option_label(User::FITNESS_LEVELS, @user.fitness_level) %></dd>

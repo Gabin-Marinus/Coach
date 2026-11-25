@@ -8,4 +8,13 @@ module ProfilesHelper
   def option_labels(options, values, blank: "None")
     values.present? ? values.map { |v| options[v] }.join(", ") : blank
   end
+
+  # "Active", "Ended" or "Archived" pill for a plan
+  def plan_status_badge(plan)
+    label, css = if plan.status == "archived" then ["Archived", "text-bg-secondary"]
+                 elsif plan.ended? then ["Ended", "text-bg-secondary"]
+                 else ["Active", "text-bg-success"]
+                 end
+    content_tag(:span, label, class: "badge rounded-pill align-middle plan-badge #{css}")
+  end
 end
