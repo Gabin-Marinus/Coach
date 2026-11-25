@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   root to: "pages#home"
 
   resource :profile, only: [:show, :edit, :update] do
+    get :plan
     get :workouts
     get :meals
   end

@@ -4,7 +4,7 @@
 
   <% if @plan.nil? %>
     <p class="text-muted">You don't have a plan yet. Chat with your coach to create one.</p>
-    <%= button_to "New chat", chats_path, class: "btn btn-primary" %>
+    <%= button_to "New plan", chats_path, class: "btn btn-primary" %>
   <% else %>
     <p class="text-muted mb-0">
       <%= @plan.goal_labels.join(", ") %> ·
