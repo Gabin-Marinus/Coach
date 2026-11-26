@@ -29,6 +29,9 @@
 
         <dt class="col-sm-5">Activity outside workouts</dt>
         <dd class="col-sm-7"><%= option_label(User::ACTIVITY_LEVELS, @user.activity_level) %></dd>
+
+        <dt class="col-sm-5">Location</dt>
+        <dd class="col-sm-7"><%= @user.location || "–" %></dd>
       </dl>
     </div>
   </div>
@@ -64,6 +67,12 @@
 
         <dt class="col-sm-5">Cooking time</dt>
         <dd class="col-sm-7"><%= option_label(User::COOKING_TIMES, @user.cooking_time) %></dd>
+
+        <dt class="col-sm-5">Food budget</dt>
+        <dd class="col-sm-7"><%= @user.food_budget_text || "–" %></dd>
+
+        <dt class="col-sm-5">In season now</dt>
+        <dd class="col-sm-7"><%= @user.seasonal_produce_text || "–" %></dd>
       </dl>
     </div>
   </div>

@@ -152,3 +152,19 @@
   .coach-fab-label { display: none; }
   .coach-fab { padding: 0 16px; }
 }
+
+// Budget suggestion buttons on the profile form
+.budget-chip {
+  padding: 6px 14px;
+  border: 1px solid rgba($fit-black, .15);
+  border-radius: 999px;
+  background: $fit-white;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:hover,
+  &:focus-visible {
+    background: $fit-green;
+    border-color: $fit-black;
+  }
+}

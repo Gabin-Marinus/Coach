@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_155343) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_115847) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -248,6 +248,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_155343) do
     t.text "injury_notes"
     t.text "exercise_dislikes"
     t.string "goals", default: [], array: true
+    t.string "city"
+    t.string "country"
+    t.decimal "food_budget", precision: 8, scale: 2
+    t.string "food_budget_period"
+    t.string "currency"
+    t.jsonb "seasonal_produce", default: {}, null: false
+    t.string "seasonal_produce_key"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

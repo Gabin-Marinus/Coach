@@ -14,7 +14,8 @@
           <% end %>
         </p>
         <div class="d-flex flex-column gap-2">
-          <% ["What should I focus on today?", "Can I swap today's dinner?", "How do I stay motivated this week?"].each do |suggestion| %>
+          <% ["What should I focus on today?", "Can I swap today's dinner?",
+              "What's in season near me right now?", "How can I eat well on my budget this week?"].each do |suggestion| %>
             <%= button_to suggestion, ask_coach_path, params: { content: suggestion },
                           class: "coach-suggestion", form: { data: { turbo_frame: "coach" } } %>
           <% end %>

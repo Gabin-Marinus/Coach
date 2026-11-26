@@ -105,10 +105,31 @@ class PlanGenerator
       - Days are numbered 1 to 7. Day 1 is the first day of the plan.
       - Every day from 1 to 7 has exactly #{meals_per_day} meals.
       - All meals of the week are different: never repeat a meal.
-      - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(", ")}.
+      - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(', ')}.
       - Respect the user's diet, allergies, food dislikes and cooking time.
+      #{seasonal_rule}
+      #{budget_rule}
       - Keep descriptions to one sentence and recipes to at most 3 short steps.
     RULES
+  end
+
+  def seasonal_rule
+    produce = @user.seasonal_produce_text
+    if produce
+      "- Build the fruits and vegetables of the meals mainly from this list, in season now in " \
+        "#{@user.location}: #{produce}. Other produce only if it is cheap and found locally " \
+        "all year (onions, carrots, potatoes, frozen vegetables...)."
+    else
+      "- Use fruits and vegetables in season where the user lives on #{Date.today.strftime('%B')} " \
+        "(mind the hemisphere), and ingredients easy to find in local shops."
+    end
+  end
+
+  def budget_rule
+    return "- Keep the meals affordable, using cheap everyday staples." if @user.weekly_food_budget.nil?
+
+    "- All the meals of the week together must cost at most #{@user.weekly_food_budget} #{@user.currency} " \
+      "in groceries, at realistic local prices. Reuse ingredients across meals to avoid waste."
   end
 
   def meal_format
