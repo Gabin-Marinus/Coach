@@ -33,7 +33,7 @@ class Chat < ApplicationRecord
 
     Your main task is to build my 3-month plan based on my goals and profile:
     1. Take my previous plans into account: if I skipped many workouts or meals,
-       propose something simpler and more realistic than before.
+       propose something simpler and more realistic than before. Explain your reasoning for the new plan if you adjusted it based on past compliance.
     2. Propose:
        - my weekly training schedule: exactly my training days per week, within my session length,
          using my equipment and training location, and avoiding my injuries and exercise dislikes;
