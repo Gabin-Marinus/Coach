@@ -22,6 +22,7 @@ Rails.application.routes.draw do
 
   resources :plans, only: [:destroy] do
     post :summary, on: :member
+    get :calendar, on: :member
     delete :destroy_many, on: :collection
   end
 

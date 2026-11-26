@@ -11,13 +11,62 @@
     <p class="page-subtitle"><%= plan.goal_labels.join(" · ") %></p>
   </div>
 
-  <div class="btn-group btn-group-sm" role="group" aria-label="Plan view">
-    <%= link_to "All", plan_profile_path(plan_params(week)),
-                class: "btn #{section.nil? ? 'btn-primary' : 'btn-outline-secondary'}" %>
-    <%= link_to "Workouts", workouts_profile_path(plan_params(week)),
-                class: "btn #{section == 'Workouts' ? 'btn-primary' : 'btn-outline-secondary'}" %>
-    <%= link_to "Meals", meals_profile_path(plan_params(week)),
-                class: "btn #{section == 'Meals' ? 'btn-primary' : 'btn-outline-secondary'}" %>
+  <div class="d-flex flex-wrap gap-2">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Plan view">
+      <%= link_to "All", plan_profile_path(plan_params(week)),
+                  class: "btn #{section.nil? ? 'btn-primary' : 'btn-outline-secondary'}" %>
+      <%= link_to "Workouts", workouts_profile_path(plan_params(week)),
+                  class: "btn #{section == 'Workouts' ? 'btn-primary' : 'btn-outline-secondary'}" %>
+      <%= link_to "Meals", meals_profile_path(plan_params(week)),
+                  class: "btn #{section == 'Meals' ? 'btn-primary' : 'btn-outline-secondary'}" %>
+    </div>
+
+    <button type="button" class="btn btn-sm btn-neon" data-bs-toggle="modal" data-bs-target="#calendarModal">
+      <i class="fa-regular fa-calendar-plus me-1"></i> Add to calendar
+    </button>
+  </div>
+</div>
+
+<%# "Add to calendar" modal: download the .ics file, then import it in Google Calendar %>
+<div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5 fw-bold" id="calendarModalTitle">Add <%= plan.title %> to your calendar</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="calendar-steps">
+          <li>
+            <strong>Download your plan</strong>
+            <div class="mt-2">
+              <%= link_to calendar_plan_path(plan, format: :ics), class: "btn btn-primary", data: { turbo: false } do %>
+                <i class="fa-solid fa-download me-1"></i> Download calendar file
+              <% end %>
+            </div>
+          </li>
+          <li>
+            <strong>Open Google Calendar import</strong>
+            <div class="mt-2">
+              <%= link_to "https://calendar.google.com/calendar/r/settings/export",
+                          target: "_blank", rel: "noopener", class: "btn btn-outline-secondary" do %>
+                Open Google Calendar <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i>
+              <% end %>
+            </div>
+          </li>
+          <li>
+            <strong>Choose the file and click "Import"</strong>
+          </li>
+        </ol>
+
+        <p class="small text-muted mb-0">
+          Workouts and meals are added as all-day events marked <strong>Free</strong>, so they never block your time.
+          Tip: create a calendar called "Coach" in Google Calendar first and import into it,
+          so you can hide or remove the whole plan at once.
+          On iPhone or Outlook, just open the file.
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
