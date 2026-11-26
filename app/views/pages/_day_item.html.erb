@@ -9,6 +9,9 @@
     <% if record.description.present? %>
       <p class="dash-muted mb-0"><%= record.description %></p>
     <% end %>
+    <% if record.is_a?(Workout) %>
+      <%= render "shared/exercises", workout: record, open: true %>
+    <% end %>
     <% if details.present? %>
       <details class="dash-details">
         <summary>Recipe</summary>

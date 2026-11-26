@@ -5,26 +5,20 @@
 class PlanSummary
   KCAL_PER_KG = 7700 # roughly the energy in 1 kg of body fat
 
-  # Multiplies the resting energy (BMR) to get daily needs, see User::ACTIVITY_LEVELS
-  ACTIVITY_FACTORS = {
-    "sedentary" => 1.2,
-    "lightly_active" => 1.375,
-    "moderately_active" => 1.55,
-    "very_active" => 1.725
-  }.freeze
-
   PROMPT = <<~PROMPT
-    You explain to a user of a fitness app what their new 3-month plan is based on.
+    You explain to a user of a fitness app what their new 1-month plan is based on.
     You get the facts about their profile and plan, and maybe the conversation where the plan was made.
 
     Write a short summary in Markdown, speaking to the user as "you":
     - One short opening sentence about the main goal(s).
     - Then 3 to 5 bullets, each starting with a bold label, choosing what matters for their goals:
-      **Calories** (maintenance vs. planned intake, the deficit or surplus, the expected pace per week
+      **Calories** (maintenance vs. planned intake, why: to lose, keep or gain weight, the deficit or surplus if any, the expected pace per week
       and, if there is a target weight, roughly when they reach it), **Protein** (grams per day and per kg
       of body weight, and why it matters for their goals), **Training** (how many sessions and why this
       fits their level, time and equipment), **Food** (diet, allergies or other preferences respected).
     - If the pace is faster than about 1% of body weight per week, say so and recommend a slower pace.
+    - If the planned intake is within 50 kcal of the calorie target, say it matches the target:
+      don't call such a small difference a deficit or surplus.
 
     Each bullet is one or two natural sentences that explain WHY, not a list of numbers. For example:
     "**Calories:** Your body burns about 2,100 kcal a day, so your plan gives you about 1,700 kcal. This deficit
@@ -67,24 +61,17 @@ class PlanSummary
 
   private
 
+  def targets
+    # The plan's real sessions (incl. regular ones like football), not just the profile's training days
+    @targets ||= @user.nutrition_targets(weekly_workout_minutes: @plan.workouts.where(date: @plan.week_dates(1))
+                                                                        .sum(:duration_min).nonzero?)
+  end
+
   def weight
-    @user.current_weight_kg&.to_f
+    targets.weight
   end
 
-  # Mifflin-St Jeor resting energy
-  def bmr
-    return if weight.nil? || @user.height_cm.nil? || @user.age.nil? || @user.sex.blank?
-
-    base = (10 * weight) + (6.25 * @user.height_cm) - (5 * @user.age)
-    @user.sex == "male" ? base + 5 : base - 161
-  end
-
-  def maintenance_kcal
-    factor = ACTIVITY_FACTORS[@user.activity_level]
-    (bmr * factor).round if bmr && factor
-  end
-
-  # Average per day over the first two weeks (the meals rotate every two weeks)
+  # Average per day over the first two weeks (the meals repeat every two weeks)
   def daily_average(column)
     meals = @plan.meals.where(date: @plan.start_date...(@plan.start_date + 14.days))
     days = meals.distinct.count(:date)
@@ -95,9 +82,11 @@ class PlanSummary
 
   def calorie_facts
     planned = daily_average(:calories)
-    maintenance = maintenance_kcal
+    maintenance = targets.maintenance
     lines = []
-    lines << "- Estimated maintenance calories (Mifflin-St Jeor x activity): #{maintenance || 'unknown'} kcal/day"
+    lines << "- Estimated maintenance calories (Mifflin-St Jeor x daily activity + " \
+             "~#{targets.workout_kcal_per_day} kcal/day for the workouts): #{maintenance || 'unknown'} kcal/day"
+    lines << "- Calorie target: #{targets.calories} kcal/day, to #{targets.direction} weight (#{targets.reason})" if targets.calories
     lines << "- Planned average intake: #{planned || 'unknown'} kcal/day"
     return lines unless planned && maintenance
 
@@ -129,7 +118,8 @@ class PlanSummary
     return [] if protein.nil?
 
     per_kg = weight ? " (#{(protein / weight).round(1)} g per kg body weight)" : ""
-    ["- Planned average protein: #{protein} g/day#{per_kg}"]
+    target = " (target: at least #{targets.protein_g} g)" if targets.protein_g
+    ["- Planned average protein: #{protein} g/day#{per_kg}#{target}"]
   end
 
   def training_facts

@@ -6,16 +6,24 @@
   <div id="messages" class="mb-4">
     <% if @messages.empty? %>
       <% goals = current_user.goals.map { |g| User::GOALS[g] }.compact %>
-      <p class="text-muted">
+      <div class="text-muted">
         <% if goals.any? %>
-          Hi! I'm your Coach. Based on your goals (<strong><%= goals.join(", ") %></strong>),
-          I'll build a 3-month training and nutrition plan for you. Say hi or tell me
-          anything you'd like me to take into account.
+          <p>
+            Hi! I'm your Coach. Based on your goals (<strong><%= goals.join(", ") %></strong>),
+            I'll build a 1-month training and nutrition plan for you. Just say <strong>"new plan"</strong>
+            and I'll use your profile, or make it fit your life even better by telling me (optional):
+          </p>
+          <ul>
+            <li><strong>Sessions you already do every week</strong> and on which days, e.g. "football on Tuesday, yoga on Saturday". I'll keep them in your plan.</li>
+            <li><strong>Meals you like and usually cook</strong>, e.g. "pasta with tomato sauce, chili, porridge". I'll build your meals around them.</li>
+            <li> <strong>Cooking preferences</strong>, e.g. batch cooking</li>
+            <li>Anything else: busy days, budget, foods you're tired of…</li>
+          </ul>
         <% else %>
           Hi! I'm your Coach. Before I can build your plan, please
           <%= link_to "complete your profile", edit_profile_path %> and choose your goals.
         <% end %>
-      </p>
+      </div>
     <% end %>
 
     <% @messages.each do |message| %>
@@ -43,7 +51,7 @@
                     class: "btn btn-success btn-lg",
                     data: {
                       turbo_confirm: "Save my plan? Your current plan will be archived.",
-                      turbo_submits_with: "Creating your 3-month plan... this can take a minute ⏳"
+                      turbo_submits_with: "Creating your 1-month plan... this can take a minute or two ⏳"
                     } %>
     </div>
   <% end %>

@@ -12,7 +12,7 @@ DTSTAMP:<%= Time.current.utc.strftime("%Y%m%dT%H%M%SZ") %>
 DTSTART;VALUE=DATE:<%= ics_date(workout.date) %>
 DTEND;VALUE=DATE:<%= ics_date(workout.date + 1) %>
 SUMMARY:<%= ics_text("🏋️ #{workout.name}#{" · #{workout.duration_min} min" if workout.duration_min}") %>
-DESCRIPTION:<%= ics_text(workout.description) %>
+DESCRIPTION:<%= ics_text([workout.description, *workout.exercise_lines].compact_blank.join("\n")) %>
 TRANSP:TRANSPARENT
 END:VEVENT
 <% end %>

@@ -151,6 +151,8 @@ class User < ApplicationRecord
   validates :height_cm, numericality: { in: 100..250 }, allow_blank: true
   validates :current_weight_kg, numericality: { in: 30..300 }, allow_blank: true
   validates :target_weight_kg, numericality: { in: 30..300 }, allow_blank: true
+  validates :country, length: { maximum: 60 }
+  normalizes :country, with: ->(country) { country.strip.presence }
 
   before_validation :clean_array_fields
   before_validation :set_equipment_from_location
@@ -185,8 +187,30 @@ class User < ApplicationRecord
     [profile_context, plans_context].join("\n\n")
   end
 
+  def nutrition_targets(weekly_workout_minutes: nil)
+    NutritionTargets.new(self, weekly_workout_minutes: weekly_workout_minutes)
+  end
+
   def ready_for_plan?
     profile_complete? && goals.present?
+  end
+
+  # Rule for the AI prompts: meals with local, seasonal food (no mango in a European winter)
+  def seasonal_food_rule(from = Date.today, to = from + Plan::DURATION)
+    months = (from..to).map { |date| date.strftime("%B") }.uniq.to_sentence
+
+    if country.present?
+      "Seasonal, local food (important): the user lives in #{country}, the meals are for #{months}. " \
+        "Only use fruit and vegetables that are in season in #{country} in those months, or stored or frozen " \
+        "local produce (e.g. apples, frozen berries). Never use produce that is out of season there or imported " \
+        "from far away. Example for a Northern European winter: use apples, pears, citrus, cabbage, kale, leeks, " \
+        "carrots, beetroot, pumpkin and potatoes; avoid mango, pineapple, papaya, asparagus, fresh berries, " \
+        "eggplant and bell peppers. Seasons are reversed in the southern hemisphere. " \
+        "Use ingredients that are easy to find and affordable in supermarkets in #{country}."
+    else
+      "The user's country is not informed: use common ingredients sold in most supermarkets " \
+        "and avoid tropical or exotic fruit (e.g. mango, pineapple, papaya)."
+    end
   end
 
   private
@@ -196,6 +220,7 @@ class User < ApplicationRecord
       ## User profile
       - Goals: #{labels(GOALS, goals)}
       - Age: #{age || 'not informed'}
+      - Country: #{country.presence || 'not informed'}
       - Sex: #{label(SEXES, sex)}
       - Height: #{height_cm ? "#{height_cm} cm" : 'not informed'}
       - Current weight: #{current_weight_kg ? "#{current_weight_kg} kg" : 'not informed'}

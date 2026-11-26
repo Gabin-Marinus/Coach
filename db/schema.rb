@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_103428) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_155751) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,6 +69,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_103428) do
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "ingredients", default: [], null: false
     t.index ["plan_id"], name: "index_meals_on_plan_id"
   end
 
@@ -99,6 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_103428) do
     t.datetime "updated_at", null: false
     t.string "goals", default: [], array: true
     t.text "summary"
+    t.jsonb "shopping_lists", default: {}, null: false
     t.index ["user_id"], name: "index_plans_on_user_id"
   end
 
@@ -418,6 +420,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_103428) do
     t.text "injury_notes"
     t.text "exercise_dislikes"
     t.string "goals", default: [], array: true
+    t.string "country"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -432,6 +435,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_103428) do
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "exercises", default: [], null: false
+    t.integer "rounds"
+    t.integer "round_rest_sec"
+    t.string "warm_up"
+    t.string "cool_down"
     t.index ["plan_id"], name: "index_workouts_on_plan_id"
   end
 

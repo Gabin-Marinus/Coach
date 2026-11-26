@@ -39,6 +39,7 @@
                       <span class="small d-md-none">· <%= workout.duration_min %> min</span>
                     <% end %>
                     <div class="small text-muted"><%= workout.description %></div>
+                    <%= render "shared/exercises", workout: workout %>
                   </td>
                   <td class="text-nowrap d-none d-md-table-cell"><%= workout.duration_min ? "#{workout.duration_min} min" : "–" %></td>
                   <td><%= render "shared/status_actions", record: workout %></td>

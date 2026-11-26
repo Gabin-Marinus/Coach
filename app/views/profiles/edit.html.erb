@@ -32,6 +32,11 @@
       </div>
     </div>
 
+    <%# as: :string, or simple_form looks for the country_select gem %>
+    <%= f.input :country, as: :string, label: "Country (optional)",
+                hint: "Your coach uses it to suggest local food that is in season.",
+                input_html: { maxlength: 60, placeholder: "e.g. Germany", autocomplete: "country-name" } %>
+
     <%= f.input :activity_level,
                 label: "How active are you outside of workouts?",
                 prompt: "Choose one",
