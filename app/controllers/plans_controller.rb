@@ -22,6 +22,16 @@ class PlansController < ApplicationController
     redirect_back fallback_location: plan_profile_path, alert: "Your coach is unavailable right now. Please try again."
   end
 
+  # "Add to calendar": downloads the plan as an .ics file (Google Calendar, Apple Calendar, Outlook...)
+  def calendar
+    @plan = current_user.plans.find(params[:id])
+    @workouts = @plan.workouts.order(:date)
+    @meals_by_date = @plan.meals.order(:date).group_by(&:date)
+
+    # "attachment" makes the browser download the file instead of showing it
+    response.headers["Content-Disposition"] = "attachment; filename=\"coach-plan-#{@plan.number}.ics\""
+  end
+
   # "Delete this plan" on the My plan page
   def destroy
     plan = current_user.plans.find(params[:id])

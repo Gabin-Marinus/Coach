@@ -14,7 +14,8 @@
           <tr>
             <th>Date</th>
             <th>Workout</th>
-            <th>Duration</th>
+            <%# d-none d-md-table-cell: hidden on phones, shown from tablets up %>
+            <th class="d-none d-md-table-cell">Duration</th>
             <th class="text-end">Status</th>
           </tr>
         </thead>
@@ -33,9 +34,13 @@
                   <td class="text-nowrap"><%= date.strftime("%a, %b %-d") %></td>
                   <td>
                     <strong><%= workout.name %></strong>
+                    <%# On phones the duration is shown here, next to the name %>
+                    <% if workout.duration_min %>
+                      <span class="small d-md-none">· <%= workout.duration_min %> min</span>
+                    <% end %>
                     <div class="small text-muted"><%= workout.description %></div>
                   </td>
-                  <td class="text-nowrap"><%= workout.duration_min ? "#{workout.duration_min} min" : "–" %></td>
+                  <td class="text-nowrap d-none d-md-table-cell"><%= workout.duration_min ? "#{workout.duration_min} min" : "–" %></td>
                   <td><%= render "shared/status_actions", record: workout %></td>
                 </tr>
               <% end %>
