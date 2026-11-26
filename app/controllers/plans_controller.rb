@@ -21,4 +21,19 @@ class PlansController < ApplicationController
   rescue RubyLLM::Error
     redirect_back fallback_location: plan_profile_path, alert: "Your coach is unavailable right now. Please try again."
   end
+
+  # "Delete this plan" on the My plan page
+  def destroy
+    plan = current_user.plans.find(params[:id])
+    title = plan.title # saved before deleting, because the title counts the plans
+    plan.destroy # also deletes its workouts and meals (dependent: :destroy)
+    redirect_to plans_profile_path, notice: "#{title} deleted.", status: :see_other
+  end
+
+  # "Delete plans" on the All plans page
+  def destroy_many
+    plans = current_user.plans.where(id: params[:plan_ids])
+    plans.destroy_all # also deletes their workouts and meals (dependent: :destroy)
+    redirect_to plans_profile_path, notice: "Plans deleted.", status: :see_other
+  end
 end
