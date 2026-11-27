@@ -26,20 +26,23 @@
           <table class="table align-middle mb-0">
             <thead>
               <tr>
-                <th>Meal</th>
+                <%# d-none d-md-table-cell: hidden on phones (the day total is in the header), shown from tablets up %>
+                <th class="d-none d-md-table-cell">Meal</th>
                 <th>Dish</th>
                 <th>kcal</th>
-                <th>Protein</th>
-                <th>Carbs</th>
-                <th>Fat</th>
+                <th class="d-none d-md-table-cell">Protein</th>
+                <th class="d-none d-md-table-cell">Carbs</th>
+                <th class="d-none d-md-table-cell">Fat</th>
                 <th class="text-end">Status</th>
               </tr>
             </thead>
             <tbody>
               <% day_meals.each do |meal| %>
                 <tr>
-                  <td><%= Meal::MEAL_TYPES[meal.meal_type] %></td>
+                  <td class="d-none d-md-table-cell"><%= Meal::MEAL_TYPES[meal.meal_type] %></td>
                   <td>
+                    <%# On phones the meal type is shown here, above the dish %>
+                    <div class="small text-muted d-md-none"><%= Meal::MEAL_TYPES[meal.meal_type] %></div>
                     <strong><%= meal.name %></strong>
                     <div class="small text-muted"><%= meal.description %></div>
                     <% if meal.recipe.present? %>
@@ -50,9 +53,9 @@
                     <% end %>
                   </td>
                   <td><%= meal.calories %></td>
-                  <td class="text-nowrap"><%= meal.protein_g %> g</td>
-                  <td class="text-nowrap"><%= meal.carbs_g %> g</td>
-                  <td class="text-nowrap"><%= meal.fat_g %> g</td>
+                  <td class="text-nowrap d-none d-md-table-cell"><%= meal.protein_g %> g</td>
+                  <td class="text-nowrap d-none d-md-table-cell"><%= meal.carbs_g %> g</td>
+                  <td class="text-nowrap d-none d-md-table-cell"><%= meal.fat_g %> g</td>
                   <td><%= render "shared/status_actions", record: meal %></td>
                 </tr>
               <% end %>

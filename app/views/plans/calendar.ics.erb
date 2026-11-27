@@ -1,0 +1,31 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Coach//Fitness plan//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:<%= ics_text("Coach · #{@plan.title}") %>
+<%# One all-day event per workout. TRANSP:TRANSPARENT = shown as "Free", not "Busy" %>
+<% @workouts.each do |workout| %>
+BEGIN:VEVENT
+UID:coach-workout-<%= workout.id %>
+DTSTAMP:<%= Time.current.utc.strftime("%Y%m%dT%H%M%SZ") %>
+DTSTART;VALUE=DATE:<%= ics_date(workout.date) %>
+DTEND;VALUE=DATE:<%= ics_date(workout.date + 1) %>
+SUMMARY:<%= ics_text("🏋️ #{workout.name}#{" · #{workout.duration_min} min" if workout.duration_min}") %>
+DESCRIPTION:<%= ics_text(workout.description) %>
+TRANSP:TRANSPARENT
+END:VEVENT
+<% end %>
+<%# One all-day event per day with all the meals of that day %>
+<% @meals_by_date.each do |date, meals| %>
+BEGIN:VEVENT
+UID:coach-meals-<%= @plan.id %>-<%= ics_date(date) %>
+DTSTAMP:<%= Time.current.utc.strftime("%Y%m%dT%H%M%SZ") %>
+DTSTART;VALUE=DATE:<%= ics_date(date) %>
+DTEND;VALUE=DATE:<%= ics_date(date + 1) %>
+SUMMARY:<%= ics_text("🍽️ Meals · #{meals.sum { |meal| meal.calories.to_i }} kcal") %>
+DESCRIPTION:<%= ics_text(meals.map { |meal| "#{Meal::MEAL_TYPES[meal.meal_type]}: #{meal.name} (#{meal.calories} kcal)" }.join("\n")) %>
+TRANSP:TRANSPARENT
+END:VEVENT
+<% end %>
+END:VCALENDAR

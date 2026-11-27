@@ -61,5 +61,31 @@
         </div>
       </div>
     <% end %>
+
+    <%# Delete this plan: the button opens the confirmation modal %>
+    <div class="text-center mt-5">
+      <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deletePlanModal">
+        Delete this plan
+      </button>
+    </div>
+
+    <div class="modal fade" id="deletePlanModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5 fw-bold">Delete <%= @plan.title %>?</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            All the workouts and meals of this plan will be deleted too.
+            <strong>This can't be undone.</strong>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= button_to "Yes, delete", plan_path(@plan), method: :delete, class: "btn btn-danger" %>
+          </div>
+        </div>
+      </div>
+    </div>
   <% end %>
 </div>

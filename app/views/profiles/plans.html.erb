@@ -1,42 +1,94 @@
-<div class="page">
+<div class="page" data-controller="plan-select">
   <div class="page-header">
     <div>
       <h1 class="page-title">All plans</h1>
       <p class="page-subtitle">Every 3-month plan you've made with your coach.</p>
     </div>
-    <%= button_to "New plan", chats_path, method: :post, class: "btn btn-primary" %>
+
+    <%# Normal buttons %>
+    <div class="d-flex gap-2" data-plan-select-target="actions">
+      <% if @plans.any? %>
+        <button type="button" class="btn btn-outline-secondary" data-action="click->plan-select#start">
+          Delete plans
+        </button>
+      <% end %>
+      <%= button_to "New plan", chats_path, method: :post, class: "btn btn-primary" %>
+    </div>
+
+    <%# Buttons shown after clicking "Delete plans" %>
+    <div class="d-flex align-items-center gap-2 d-none" data-plan-select-target="toolbar">
+      <span class="me-2"><strong data-plan-select-target="count">0</strong> selected</span>
+      <button type="button" class="btn btn-outline-secondary" data-action="click->plan-select#cancel">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-danger" disabled data-plan-select-target="deleteButton"
+              data-bs-toggle="modal" data-bs-target="#deletePlansModal">
+        Delete
+      </button>
+    </div>
   </div>
 
   <% if @plans.empty? %>
     <%= render "no_plan" %>
   <% end %>
 
-  <% @plans.each do |plan| %>
-    <% workouts_done = @workout_counts[[plan.id, "done"]].to_i %>
-    <% workouts_total = Workout::STATUSES.sum { |s| @workout_counts[[plan.id, s]].to_i } %>
-    <% meals_done = @meal_counts[[plan.id, "done"]].to_i %>
-    <% meals_total = Meal::STATUSES.sum { |s| @meal_counts[[plan.id, s]].to_i } %>
-    <% total = workouts_total + meals_total %>
-    <% percent = total.zero? ? 0 : (100.0 * (workouts_done + meals_done) / total).round %>
-    <% current = plan == @user.current_plan %>
+  <%= form_with url: destroy_many_plans_path, method: :delete do %>
+    <% @plans.each do |plan| %>
+      <% workouts_done = @workout_counts[[plan.id, "done"]].to_i %>
+      <% workouts_total = Workout::STATUSES.sum { |s| @workout_counts[[plan.id, s]].to_i } %>
+      <% meals_done = @meal_counts[[plan.id, "done"]].to_i %>
+      <% meals_total = Meal::STATUSES.sum { |s| @meal_counts[[plan.id, s]].to_i } %>
+      <% total = workouts_total + meals_total %>
+      <% percent = total.zero? ? 0 : (100.0 * (workouts_done + meals_done) / total).round %>
+      <% current = plan == @user.current_plan %>
 
-    <%= link_to plan_profile_path(current ? {} : { plan_id: plan.id }),
-                class: "plan-card card p-4 mb-3 text-decoration-none #{'card-today' if current}" do %>
-      <div class="d-flex justify-content-between align-items-start gap-3">
-        <div>
-          <p class="page-eyebrow mb-1"><%= plan.timeframe %></p>
-          <h2 class="h4 fw-bold mb-1"><%= plan.title %> <%= plan_status_badge(plan) %></h2>
-          <p class="text-muted mb-0"><%= plan.goal_labels.join(" · ") %></p>
-        </div>
-        <span class="plan-card-arrow">→</span>
-      </div>
+      <%# A label: clicking anywhere on the row ticks the checkbox %>
+      <label class="plan-row d-flex align-items-center gap-3 mb-3">
+        <input type="checkbox" name="plan_ids[]" value="<%= plan.id %>"
+               class="form-check-input plan-checkbox m-0 d-none"
+               data-plan-select-target="checkbox" data-action="change->plan-select#update">
 
-      <div class="d-flex flex-wrap gap-4 mt-3 small">
-        <span><strong><%= workouts_done %></strong>/<%= workouts_total %> workouts done</span>
-        <span><strong><%= meals_done %></strong>/<%= meals_total %> meals done</span>
-        <span class="ms-auto fw-bold"><%= percent %>%</span>
-      </div>
-      <div class="plan-progress mt-2"><div style="width: <%= percent %>%"></div></div>
+        <%= link_to plan_profile_path(current ? {} : { plan_id: plan.id }),
+                    class: "plan-card card p-4 flex-grow-1 text-decoration-none #{'card-today' if current}" do %>
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <p class="page-eyebrow mb-1"><%= plan.timeframe %></p>
+              <h2 class="h4 fw-bold mb-1"><%= plan.title %> <%= plan_status_badge(plan) %></h2>
+              <p class="text-muted mb-0"><%= plan.goal_labels.join(" · ") %></p>
+            </div>
+            <span class="plan-card-arrow">→</span>
+          </div>
+
+          <div class="d-flex flex-wrap gap-4 mt-3 small">
+            <span><strong><%= workouts_done %></strong>/<%= workouts_total %> workouts done</span>
+            <span><strong><%= meals_done %></strong>/<%= meals_total %> meals done</span>
+            <span class="ms-auto fw-bold"><%= percent %>%</span>
+          </div>
+          <div class="plan-progress mt-2"><div style="width: <%= percent %>%"></div></div>
+        <% end %>
+      </label>
     <% end %>
+
+    <%# Confirmation modal (Bootstrap) %>
+    <div class="modal fade" id="deletePlansModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5 fw-bold">
+              Delete <span data-plan-select-target="count">0</span> plan(s)?
+            </h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            The workouts and meals of these plans will be deleted too.
+            <strong>This can't be undone.</strong>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <%= submit_tag "Yes, delete", class: "btn btn-danger" %>
+          </div>
+        </div>
+      </div>
+    </div>
   <% end %>
 </div>

@@ -140,6 +140,31 @@ details summary {
   color: rgba($fit-black, .3);
 }
 
+// ---------- Add to calendar modal ----------
+.calendar-steps {
+  padding-left: 20px;
+
+  li { margin-bottom: 16px; }
+}
+
+// ---------- Deleting plans ----------
+.plan-checkbox {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+// While selecting, a click on the card ticks the checkbox instead of opening the plan
+.selecting .plan-card {
+  pointer-events: none;
+}
+
+// Highlight the cards that are ticked
+.plan-row:has(.plan-checkbox:checked) .plan-card {
+  border-color: $fit-black;
+  background: $fit-green-40;
+}
+
 .plan-progress {
   height: 6px;
   border-radius: 50rem;

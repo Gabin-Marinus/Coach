@@ -20,8 +20,10 @@ Rails.application.routes.draw do
     post :reset
   end
 
-  resources :plans, only: [] do
+  resources :plans, only: [:destroy] do
     post :summary, on: :member
+    get :calendar, on: :member
+    delete :destroy_many, on: :collection
   end
 
   resources :workouts, only: [:update]
