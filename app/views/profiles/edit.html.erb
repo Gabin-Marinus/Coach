@@ -38,6 +38,20 @@
                 collection: User::ACTIVITY_LEVELS.invert,
                 required: true %>
 
+    <p class="form-text mb-2">Where do you live? Your coach uses it to suggest local food that is in season.</p>
+    <div class="row">
+      <div class="col-md-6">
+        <%= f.input :city, label: "City (optional)",
+                    input_html: { placeholder: "e.g. Lyon", autocomplete: "address-level2" } %>
+      </div>
+      <div class="col-md-6">
+        <%= f.input :country, label: "Country", required: true,
+                    collection: User::COUNTRIES,
+                    prompt: "Choose one",
+                    input_html: { autocomplete: "country-name" } %>
+      </div>
+    </div>
+
     <%# ---------- 2. Goal ---------- %>
     <h2 class="section-title mt-5">2. Your goal</h2>
 
@@ -63,6 +77,10 @@
     <%= f.input :food_dislikes, label: "Anything you don't eat or don't like?",
                 input_html: { rows: 2, placeholder: "e.g. mushrooms, very spicy food" } %>
 
+    <%= f.input :favorite_meals, label: "Favourite meals (optional)",
+                hint: "Dishes you love or often cook. Your coach adds them to your plan once or twice a week.",
+                input_html: { rows: 2, maxlength: 500, placeholder: "e.g. spaghetti bolognese, chicken curry, pancakes" } %>
+
     <div class="row">
       <div class="col-md-6">
         <%= f.input :meals_per_day, label: "Meals per day",
@@ -75,6 +93,39 @@
                 prompt: "Choose one",
                 collection: User::COOKING_TIMES.invert,
                 required: true %>
+
+    <%# Food budget: the meal plan is built to fit in it %>
+    <div data-controller="budget">
+      <p class="fw-semibold mb-1">How much do you want to spend on food? <abbr title="required">*</abbr></p>
+      <p class="form-text mt-0 mb-2">Your groceries for all your meals. Pick a suggestion or type your own amount.</p>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <% [30, 50, 75, 100, 150].each do |amount| %>
+          <button type="button" class="budget-chip" data-action="budget#pick"
+                  data-budget-amount-param="<%= amount %>" data-budget-period-param="week">
+            <%= amount %> / week
+          </button>
+        <% end %>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <%= f.input :food_budget, label: "Amount", required: true,
+                      input_html: { min: 1, step: 1, data: { budget_target: "amount" } } %>
+        </div>
+        <div class="col-md-4">
+          <%= f.input :currency, label: "Currency", required: true,
+                      collection: User::CURRENCIES.invert,
+                      prompt: "Choose one" %>
+        </div>
+        <div class="col-md-4">
+          <%= f.input :food_budget_period, label: "Period", required: true,
+                      collection: User::BUDGET_PERIODS.invert,
+                      selected: f.object.food_budget_period || "week",
+                      input_html: { data: { budget_target: "period" } } %>
+        </div>
+      </div>
+    </div>
 
     <%# ---------- 4. Training ---------- %>
     <h2 class="section-title mt-5">4. Training</h2>
@@ -105,7 +156,7 @@
 
     <div class="row">
       <div class="col-md-6">
-        <%= f.input :training_days_per_week, label: "Days per week",
+        <%= f.input :training_days_per_week, label: "Training days per week (in total)",
                     collection: User::TRAINING_DAYS,
                     prompt: "Choose one", required: true %>
       </div>
@@ -115,6 +166,11 @@
                     prompt: "Choose one", required: true %>
       </div>
     </div>
+
+    <%= f.input :regular_sessions, label: "Sessions you already do every week (optional)",
+                hint: "They count in your training days. Describe a session's format and your coach builds it that way.",
+                input_html: { rows: 2, maxlength: 500,
+                              placeholder: "e.g. boxing on Saturday (60 min); once a week a 20 min run, then strength exercises" } %>
 
     <%= f.input :preferred_time, label: "When do you prefer to train? (optional)",
                 collection: User::PREFERRED_TIMES.invert,
