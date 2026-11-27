@@ -105,9 +105,11 @@ class PlanGenerator
     Empty list if there are none.
   PROMPT
 
-  def initialize(chat)
+  # plan: an existing plan to rebuild from the chat ("Update Plan #2"): same number and dates, new content
+  def initialize(chat, plan: nil)
     @chat = chat
     @user = chat.user
+    @plan = plan
   end
 
   def call
@@ -118,8 +120,7 @@ class PlanGenerator
     meal_weeks  = [first_week["meals"], second_week["meals"]]
 
     plan = ActiveRecord::Base.transaction do
-      # Plan copies the user's goals automatically (before_validation in Plan)
-      plan = @user.plans.create!(start_date: start_date, end_date: end_date)
+      plan = save_plan
       create_workouts(plan, first_week["workouts"])
       create_meals(plan, meal_weeks)
       plan
@@ -131,6 +132,16 @@ class PlanGenerator
   end
 
   private
+
+  # A new plan (it copies the user's goals, see Plan), or the plan being updated, emptied first
+  def save_plan
+    return @user.plans.create!(chat: @chat, start_date: start_date, end_date: end_date) if @plan.nil?
+
+    @plan.workouts.delete_all
+    @plan.meals.delete_all
+    @plan.update!(goals: @user.goals, chat: @chat, summary: nil, shopping_lists: {})
+    @plan
+  end
 
   # "Why this plan" text; the plan is still saved if this fails (it can be generated later)
   def add_summary(plan)
@@ -146,12 +157,13 @@ class PlanGenerator
     Rails.logger.warn("[PlanGenerator] Shopping lists failed: #{e.class}: #{e.message}")
   end
 
+  # An updated plan keeps its dates, so it stays the same month (and "Plan #2")
   def start_date
-    Date.today
+    @plan&.start_date || Date.today
   end
 
   def end_date
-    start_date + Plan::DURATION - 1.day
+    @plan&.end_date || (start_date + Plan::DURATION - 1.day)
   end
 
   # Yields the first day of every week of the plan, with the week index (0, 1, 2...)

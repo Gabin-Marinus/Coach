@@ -3,6 +3,13 @@
 
   <h1 id="chat_title" class="page-title mb-4"><%= @chat.title %></h1>
 
+  <% if (saved_plan = @chat.plan_to_update) %>
+    <div class="alert alert-light border small mb-4">
+      This conversation made <%= link_to saved_plan.title, plan_profile_path %>. Tell your coach what to change
+      (e.g. "move the workout to Thursday", "no fish on weekdays"), then click <strong>Update <%= saved_plan.title %></strong>.
+    </div>
+  <% end %>
+
   <%# Live updates: the coach's answer appears bit by bit (ChatResponseJob) %>
   <%= turbo_stream_from @chat, :messages %>
 

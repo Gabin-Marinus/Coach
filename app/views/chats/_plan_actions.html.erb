@@ -1,12 +1,29 @@
+<%# "Save my plan" once the coach proposed one. In the chat that made the current plan:
+    "Update Plan #2" (same plan, rebuilt from this conversation) or save the changes as a new plan. %>
 <div id="plan_actions">
   <% if chat.plan_proposed? %>
-    <div class="text-center my-3">
-      <%= button_to "Save my plan", chat_plans_path(chat),
-                    class: "btn btn-success btn-lg",
-                    data: {
-                      turbo_confirm: "Save my plan? Your current plan will be archived.",
-                      turbo_submits_with: "Creating your 1-month plan... this can take a minute or two ⏳"
-                    } %>
+    <% saving = "Creating your 1-month plan... this can take a minute or two ⏳" %>
+    <div class="d-flex flex-wrap justify-content-center gap-2 my-3">
+      <% if (plan = chat.plan_to_update) %>
+        <%= button_to "Update #{plan.title}", chat_plans_path(chat), params: { update: true },
+                      class: "btn btn-success btn-lg",
+                      data: {
+                        turbo_confirm: "Update #{plan.title} with the changes from this chat? Its workouts and meals " \
+                                       "are rebuilt, and what you marked as done or skipped is reset.",
+                        turbo_submits_with: "Updating #{plan.title}... this can take a minute or two ⏳"
+                      } %>
+        <%= button_to "Save as a new plan", chat_plans_path(chat),
+                      class: "btn btn-outline-secondary btn-lg",
+                      data: { turbo_confirm: "Save as a new plan? #{plan.title} will be archived.",
+                              turbo_submits_with: saving } %>
+      <% else %>
+        <%= button_to "Save my plan", chat_plans_path(chat),
+                      class: "btn btn-success btn-lg",
+                      data: {
+                        turbo_confirm: "Save my plan? Your current plan will be archived.",
+                        turbo_submits_with: saving
+                      } %>
+      <% end %>
     </div>
   <% end %>
 </div>
