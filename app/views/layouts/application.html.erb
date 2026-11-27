@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<%# data-bs-theme="dark": Bootstrap's dark mode (modals, close buttons, dropdowns follow the dark theme) %>
-<html data-bs-theme="dark">
+<%# data-bs-theme: Bootstrap's own light/dark mode (modals, close buttons...), matching the user's design %>
+<html data-bs-theme="<%= current_theme == 'dark' ? 'dark' : 'light' %>">
   <head>
     <title><%= content_for(:title) || "Coach" %></title>
     <%# viewport-fit=cover: the app uses the whole screen on phones with a notch (see the safe-area paddings) %>
@@ -23,8 +23,13 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%# Light or dark design (profile setting, or the sun/moon button in the navbar) %>
+    <%= theme_stylesheets %>
+    <% if current_theme == "system" %>
+      <%= javascript_tag nonce: true do %>
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.bsTheme = "dark"
+      <% end %>
+    <% end %>
     <%= javascript_importmap_tags %>
   </head>
 

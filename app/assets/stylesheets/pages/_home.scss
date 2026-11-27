@@ -2,7 +2,7 @@
 // Layout, buttons and titles come from components/_theme.scss
 
 .dash-muted {
-  color: $text-muted;
+  color: rgba($fit-black, 0.55);
   font-size: 14px;
 }
 
@@ -18,20 +18,18 @@
   letter-spacing: -0.03em;
 }
 
-// "Progress." in the title: black text on lime
 .dash-highlight {
   padding: 0 6px;
-  background: $lime;
-  color: $black;
+  background: $fit-green;
 }
 
 // ---------- Goal card ----------
 .dash-goal-plan {
   margin-bottom: 16px;
   font-size: 13px;
-  color: $text-muted;
+  color: rgba($fit-white, .6);
 
-  strong { color: $text; }
+  strong { color: $fit-white; }
 }
 
 .dash-goal {
@@ -39,11 +37,9 @@
   overflow: hidden;   // clips the swoosh to the rounded corners
   margin-bottom: 24px;
   padding: 24px;
-  border: 1px solid $card-border;
   border-radius: 20px;
-  background: $surface;
-  box-shadow: $card-shadow;
-  color: $text;
+  background: $fit-black;
+  color: $fit-white;
 
   // Text, tags and progress bar stay above the swoosh
   > :not(.dash-goal-swoosh) {
@@ -52,7 +48,8 @@
   }
 }
 
-// Decorative neon swoosh on the right ~40% of the plan card
+// Decorative neon swoosh on the right ~40% of the plan card, like the dark design but only green
+// (the SVG's orange lines are recolored here, see pages/_goal_card.html.erb)
 .dash-goal-swoosh {
   position: absolute;
   top: 0;
@@ -67,12 +64,14 @@
     height: 100%;
   }
 
+  path[stroke="#F59E0B"] { stroke: $fit-green; }
+
   // Fades the left edge of the swoosh into the card
   &::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(to right, $surface 0%, transparent 40%);
+    background: linear-gradient(to right, $fit-black 0%, transparent 40%);
   }
 }
 
@@ -92,7 +91,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: rgba($fit-white, 0.5);
 }
 
 .dash-goal-value {
@@ -105,58 +104,54 @@
     margin-left: 4px;
     font-size: 16px;
     font-weight: 600;
-    color: $text-muted;
+    color: rgba($fit-white, 0.5);
   }
 }
 
 .dash-goal-arrow {
   font-size: 28px;
-  color: $text-muted;
+  color: rgba($fit-white, 0.3);
 }
 
-// "15 kg to gain"
 .dash-goal-togo {
   margin: 8px 0 0;
   font-size: 14px;
-  color: $orange;
+  color: $fit-green-40;
 }
 
-// The goal tags stay on one line
 .dash-goal-pills {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
 }
 
-// Goal tags: orange outline + orange text
 .dash-pill {
   padding: 4px 12px;
-  border: 1px solid $orange;
+  border: 1px solid rgba($fit-green, 0.5);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  color: $orange;
-  white-space: nowrap;
+  color: $fit-green;
 }
 
 .dash-goal-progress {
   margin-top: 20px;
   font-size: 13px;
-  color: $text-muted;
+  color: rgba($fit-white, 0.6);
 }
 
 .dash-progress {
   height: 6px;
   margin-top: 6px;
   border-radius: 999px;
-  background: $border;
+  background: $fit-black-88;
   overflow: hidden;
 
   div {
     height: 100%;
     border-radius: 999px;
-    background: $lime;
+    background: $fit-green;
   }
 }
 
@@ -170,23 +165,22 @@
 }
 
 .dash-day-link {
-  color: $text-muted;
+  color: rgba($fit-black, 0.6);
   font-weight: 600;
   text-decoration: none;
 
-  &:hover { color: $text; }
+  &:hover { color: $fit-black; }
 }
 
-// "Today" pill: lime with black text
 .dash-day-current,
 .dash-day-today {
   padding: 4px 12px;
   border-radius: 999px;
-  background: $lime;
-  color: $black;
+  background: $fit-black;
+  color: $fit-green;
   font-weight: 700;
 
-  &:hover { color: $black; }
+  &:hover { color: $fit-green; }
 }
 
 .dash-summary {
@@ -196,11 +190,8 @@
   gap: 8px;
   padding: 12px 16px;
   margin-bottom: 8px;
-  border: 1px solid $card-border;
   border-radius: 12px;
-  background: $surface;
-  box-shadow: $card-shadow;
-  color: $text;
+  background: $fit-green-40;
   font-size: 14px;
 }
 
@@ -208,10 +199,9 @@
 .dash-card {
   margin-bottom: 10px;
   padding: 18px 20px;
-  border: 1px solid $card-border;
+  border: 1px solid rgba($fit-black, 0.08);
   border-radius: 16px;
-  background: $surface;
-  box-shadow: $card-shadow;
+  background: #FFFFFF;
 }
 
 .dash-card-title {
@@ -219,13 +209,12 @@
   font-weight: 800;
 }
 
-// Workout / meal card: thin orange line on the left
 .dash-item {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 16px;
-  border-left: 3px solid $orange;
+  border-left: 4px solid $fit-green;
   transition: opacity 0.2s ease;
 }
 
@@ -237,7 +226,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: rgba($fit-black, 0.45);
 }
 
 .dash-item-name {
@@ -263,28 +252,28 @@
 }
 
 .dash-item-done {
-  border-left-color: $border-strong;
+  border-left-color: $fit-black;
   opacity: 0.6;
 
   .dash-item-name { text-decoration: line-through; }
 }
 
 .dash-item-skipped {
-  border-left-color: $border-strong;
+  border-left-color: rgba($fit-black, 0.2);
   opacity: 0.5;
 }
 
-.dash-rest { border-left-color: $border-strong; }
+.dash-rest { border-left-color: rgba($fit-black, 0.2); }
 
 .dash-status {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: $text-muted;
+  color: rgba($fit-black, 0.45);
 }
 
-.dash-status-done { color: $text; }
+.dash-status-done { color: $fit-black; }
 
 .dash-details {
   margin-top: 6px;

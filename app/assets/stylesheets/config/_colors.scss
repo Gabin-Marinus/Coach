@@ -1,15 +1,13 @@
-// Brand palette: dark theme with a neon lime accent and a little orange
-// Balance: ~60% black background, ~30% dark grey cards, ~10% accents
-$black:         #0A0A0A; // page background, navbar
-$surface:       #1C1C1C; // cards, panels, inputs (slightly lighter than the background)
-$border:        #262626; // 1px border around inputs, dividers
-$card-border:   #2A2A2A; // 1px border around cards and panels
-$card-shadow:   0 4px 20px rgba(0, 0, 0, 0.5); // soft shadow so cards stand out a little
-$border-strong: #3A3A3A; // secondary buttons ("Skip", "Log out")
-$text:          #F5F5F2; // main text (off-white)
-$text-muted:    #A3A3A3; // labels, descriptions, dates
+// Brand palette: black + neon "fit green"
+$fit-white: #F5F5F2;
+$fit-green: #C6F432;
+$fit-green-40: #E8FBAD;
+$fit-black-88: #1F1F1F;
+$fit-black: #0A0A0A;
 
-$lime:          #C6F432; // main accent: primary buttons, progress bars, active nav, "Today" pill
-$lime-hover:    #D6FA66; // lighter lime when hovering a primary button
-$orange:        #F59E0B; // second accent: goal number, goal tags, left border of workout/meal cards
-$red:           #E5484D; // errors
+$red: #E5484D;
+$orange: #F59E0B;
+$gray: $fit-black;
+$light-gray: $fit-white;
+
+$is-dark-design: false;

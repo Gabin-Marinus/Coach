@@ -1,0 +1,16 @@
+// The dark design (users who chose "Dark", or "Same as my device" on a device in dark mode).
+// Only the files that look different are in stylesheets/dark/; the rest is shared with application.scss.
+// When you change a style in components/ or pages/, check if its dark/ copy needs the same change.
+
+// Graphical variables
+@import "config/fonts";
+@import "dark/config/colors";
+@import "dark/config/bootstrap_variables";
+
+// External libraries
+@import "bootstrap";
+@import "font-awesome";
+
+// Your CSS partials
+@import "dark/components/index";
+@import "dark/pages/index";

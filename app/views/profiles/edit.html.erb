@@ -186,6 +186,12 @@
     <%= f.input :exercise_dislikes, label: "Exercises you don't like (optional)",
                 input_html: { rows: 2, placeholder: "e.g. burpees, running" } %>
 
+    <%# ---------- Design ---------- %>
+    <h2 class="section-title mt-5">5. Design</h2>
+    <%= f.input :theme, label: "Light or dark?",
+                collection: User::THEMES.invert, include_blank: false,
+                hint: "\"Same as my device\" follows your phone or computer setting. You can also switch with the sun/moon button at the top." %>
+
     <%= f.button :submit, "Save my profile", class: "btn btn-primary btn-lg mt-4 w-100" %>
   <% end %>
 </div>

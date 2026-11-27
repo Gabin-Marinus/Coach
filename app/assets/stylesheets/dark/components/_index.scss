@@ -1,0 +1,10 @@
+// Dark design: the components that look different in dark (this folder) + the shared ones
+@import "theme";
+@import "alert";
+@import "components/avatar";            // shared with the light design
+@import "components/form_legend_clear"; // shared with the light design
+@import "navbar";
+@import "auth";
+@import "coach";
+@import "mobile";
+@import "components/theme_toggle";      // shared

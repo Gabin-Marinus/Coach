@@ -1,0 +1,31 @@
+// Sun/moon button in the navbar: each design shows the button that switches to the other one
+// (the light stylesheet hides "to light", the dark one hides "to dark", see $is-dark-design)
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(#F5F5F2, .2);
+  border-radius: 50%;
+  background: transparent;
+  color: #F5F5F2;
+  font-size: 15px;
+
+  .theme-toggle-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: #C6F432;
+    color: #C6F432;
+  }
+}
+
+@if $is-dark-design {
+  .theme-toggle-to-dark { display: none !important; }
+} @else {
+  .theme-toggle-to-light { display: none !important; }
+}

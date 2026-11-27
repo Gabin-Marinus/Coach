@@ -12,9 +12,8 @@
   max-width: 420px;
   padding: 32px;
   border-radius: 20px;
-  background: $surface;
-  border: 1px solid $card-border;
-  box-shadow: $card-shadow;
+  background: #FFFFFF;
+  border: 1px solid rgba($fit-black, .08);
 }
 
 .auth-badge {
@@ -22,8 +21,8 @@
   margin-bottom: 16px;
   padding: 4px 12px;
   border-radius: 50rem;
-  background: $border;
-  color: $text;
+  background: $fit-black;
+  color: $fit-green;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .06em;
@@ -39,19 +38,19 @@
 
 .auth-subtitle {
   margin-bottom: 24px;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
 }
 
 .auth-links {
   margin-top: 20px;
   text-align: center;
   font-size: 14px;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
 
   p { margin-bottom: 6px; }
 
   a {
     font-weight: 600;
-    color: $text;
+    color: $fit-black;
   }
 }

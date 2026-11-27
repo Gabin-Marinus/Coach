@@ -1,0 +1,205 @@
+// Floating coach button (bottom right) + side panel
+
+// Lime button with black text
+.coach-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1030;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 20px 0 16px;
+  border: none;
+  border-radius: 50rem;
+  background: $lime;
+  color: $black;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(#000, .5);
+  transition: transform .15s ease, background .15s ease;
+
+  i { font-size: 20px; }
+
+  &:hover { transform: translateY(-2px); background: $lime-hover; }
+}
+
+.coach-panel {
+  --bs-offcanvas-width: 420px;
+  --bs-offcanvas-bg: #{$black};
+  --bs-offcanvas-color: #{$text};
+
+  .offcanvas-header {
+    align-items: flex-start;
+    border-bottom: 1px solid $border;
+    background: $surface;
+    color: $text;
+  }
+
+  .offcanvas-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .navbar-logo {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: $lime;
+  }
+
+  .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.coach-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: $text-muted;
+}
+
+.coach-frame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.coach-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.coach-intro {
+  padding: 16px;
+  border-radius: 16px;
+  background: $surface;
+  border: 1px solid $card-border;
+  box-shadow: $card-shadow;
+  font-size: 14px;
+}
+
+// Suggested questions: same look as the secondary buttons
+.coach-suggestion {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid $border-strong;
+  border-radius: 12px;
+  background: transparent;
+  color: $text;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+
+  &:hover { border-color: $text-muted; }
+}
+
+.coach-message {
+  max-width: 90%;
+  margin-bottom: 12px;
+  padding: 10px 14px 2px;
+  border-radius: 16px;
+  font-size: 14px;
+
+  p, ul, ol { margin-bottom: 8px; }
+  ul, ol { padding-left: 18px; }
+}
+
+.coach-message-user {
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+  background: $border;
+  color: $text;
+}
+
+.coach-message-assistant {
+  border-bottom-left-radius: 4px;
+  background: $surface;
+  border: 1px solid $card-border;
+  box-shadow: $card-shadow;
+}
+
+.coach-error {
+  font-size: 13px;
+  color: $red;
+}
+
+.coach-footer {
+  padding: 12px 16px 16px;
+  border-top: 1px solid $border;
+  background: $surface;
+}
+
+.coach-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  textarea { resize: none; font-size: 14px; }
+}
+
+.coach-limit {
+  padding: 12px;
+  border-radius: 12px;
+  background: $border;
+  color: $text;
+  font-size: 14px;
+}
+
+// Keep page content clear of the button on small screens
+@media (max-width: 576px) {
+  .coach-fab-label { display: none; }
+  .coach-fab { padding: 0 16px; }
+}
+
+// Budget suggestion buttons on the profile form: same look as the secondary buttons
+.budget-chip {
+  padding: 6px 14px;
+  border: 1px solid $border-strong;
+  border-radius: 999px;
+  background: transparent;
+  color: $text;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $text-muted;
+  }
+}
+
+// "Your coach is typing…" while the answer streams in
+.coach-typing {
+  color: $text-muted;
+  font-style: italic;
+  animation: coach-typing 1.2s ease-in-out infinite;
+}
+
+@keyframes coach-typing {
+  50% { opacity: .4; }
+}
+
+// Live progress while a plan is saved (chats/_plan_progress). Not ".plan-progress": that is the bar on All plans
+.plan-saving-steps li {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+
+  &.is-done { color: $text-muted; }
+  &.is-active { font-weight: 600; }
+  &.is-waiting { color: rgba($text, .35); }
+}
+
+.plan-saving-icon {
+  width: 18px;
+  text-align: center;
+}

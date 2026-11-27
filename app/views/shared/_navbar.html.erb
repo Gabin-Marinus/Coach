@@ -4,6 +4,9 @@
   <% end %>
 
   <% if user_signed_in? %>
+    <%# Phones: the design switch next to the menu button %>
+    <%= render "shared/theme_toggle", classes: "d-md-none ms-auto me-2" %>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCoach"
             aria-controls="navbarCoach" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -23,6 +26,7 @@
 
       <div class="d-flex flex-wrap align-items-center gap-2 mt-3 mt-md-0">
         <span class="navbar-email d-none d-lg-inline me-2"><%= current_user.email %></span>
+        <%= render "shared/theme_toggle", classes: "d-none d-md-inline-flex" %>
         <%= button_to "New plan", chats_path, method: :post,
                       class: "btn btn-sm btn-neon", form: { class: "d-inline" } %>
         <%= link_to "Log out", destroy_user_session_path,

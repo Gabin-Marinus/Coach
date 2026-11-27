@@ -63,6 +63,13 @@ class User < ApplicationRecord
     "mixed" => "A mix"
   }.freeze
 
+  # The app's design (see the layout and application_dark.scss)
+  THEMES = {
+    "system" => "Same as my device",
+    "light" => "Light",
+    "dark" => "Dark"
+  }.freeze
+
   PREFERRED_TIMES = {
     "morning" => "Morning",
     "midday" => "Midday",
@@ -179,6 +186,7 @@ class User < ApplicationRecord
   validates :country, inclusion: { in: COUNTRIES }, allow_blank: true
   validates :city, length: { maximum: 100 }
   validates :favorite_meals, :regular_sessions, length: { maximum: 500 }
+  validates :theme, inclusion: { in: THEMES.keys }
   normalizes :city, :country, with: ->(value) { value.strip.presence }
 
   before_validation :clean_array_fields

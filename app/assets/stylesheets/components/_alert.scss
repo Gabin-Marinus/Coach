@@ -1,23 +1,20 @@
 // In-page alerts (e.g. "profile incomplete", form errors)
 .alert {
-  border: 1px solid $card-border;
+  border: none;
   border-left: 4px solid $orange;
   border-radius: 12px;
-  background: $surface;
-  box-shadow: $card-shadow;
-  color: $text;
+  background: #FFFFFF;
+  color: $fit-black;
 }
 
 .alert-danger { border-left-color: $red; }
 
 .form-errors {
   border-left: 4px solid $red;
-  background: rgba($red, .12);
-  color: $text;
+  background: rgba($red, .08);
 }
 
 // Flash messages: small dark toast in the bottom right corner
-// (the close button turns white by itself in Bootstrap's dark mode)
 .alert.flash {
   position: fixed;
   bottom: 88px; // above the coach button
@@ -25,10 +22,12 @@
   z-index: 1000;
   max-width: 420px;
   margin: 0;
-  border-left-color: $border-strong;
-  background: $surface;
-  color: $text;
-  box-shadow: 0 8px 24px rgba(#000, .5);
+  border-left-color: $fit-green;
+  background: $fit-black;
+  color: $fit-white;
+  box-shadow: 0 8px 24px rgba($fit-black, .25);
 
   &.flash-alert { border-left-color: $orange; }
+
+  .btn-close { filter: invert(1); }
 }

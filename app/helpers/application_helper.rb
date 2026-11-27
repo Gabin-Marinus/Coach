@@ -1,4 +1,20 @@
 module ApplicationHelper
+  # "system", "light" or "dark": the user's choice; before logging in, the device decides
+  def current_theme
+    user_signed_in? ? current_user.theme : "system"
+  end
+
+  # The light and/or dark stylesheet. "system" loads both, and the browser uses the one that matches
+  # the device's setting (media query), so the page never flashes in the wrong design.
+  def theme_stylesheets
+    case current_theme
+    when "dark" then stylesheet_link_tag("application_dark", "data-turbo-track": "reload")
+    when "light" then stylesheet_link_tag("application", "data-turbo-track": "reload")
+    else
+      safe_join([stylesheet_link_tag("application", media: "(prefers-color-scheme: light)", "data-turbo-track": "reload"),
+                 stylesheet_link_tag("application_dark", media: "(prefers-color-scheme: dark)", "data-turbo-track": "reload")])
+    end
+  end
   STATUS_BADGES = { "planned" => "secondary", "done" => "success", "skipped" => "warning" }.freeze
 
   def render_markdown(text)
