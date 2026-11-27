@@ -7,8 +7,11 @@ class PlansController < ApplicationController
       return
     end
 
-    PlanGenerator.new(@chat).call
-    redirect_to workouts_profile_path, notice: "Your 1-month plan was saved! 🎉"
+    # "Update Plan #2" rebuilds the plan this chat made; "Save my plan" makes a new one
+    plan = @chat.plan_to_update if params[:update] == "true"
+    PlanGenerator.new(@chat, plan: plan).call
+    notice = plan ? "#{plan.title} was updated! 🎉" : "Your 1-month plan was saved! 🎉"
+    redirect_to workouts_profile_path, notice: notice
   rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error, PlanGenerator::Error
     redirect_to chat_path(@chat), alert: "Sorry, we couldn't save your plan. Please try again."
   end

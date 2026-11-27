@@ -1,0 +1,10 @@
+<%# Disabled while the coach is answering, so two answers don't mix %>
+<% disabled = local_assigns.fetch(:disabled, false) %>
+<div id="new_message_container">
+  <%= simple_form_for [chat, Message.new] do |f| %>
+    <%= f.input :content, label: false,
+                placeholder: disabled ? "Your coach is answering…" : "Ask your coach...",
+                input_html: { rows: 3, disabled: disabled } %>
+    <%= f.button :submit, disabled ? "Answering…" : "Send", class: "btn btn-primary", disabled: disabled %>
+  <% end %>
+</div>

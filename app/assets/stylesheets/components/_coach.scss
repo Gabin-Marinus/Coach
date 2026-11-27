@@ -168,3 +168,14 @@
     border-color: $fit-black;
   }
 }
+
+// "Your coach is typing…" while the answer streams in
+.coach-typing {
+  color: rgba($fit-black, .55);
+  font-style: italic;
+  animation: coach-typing 1.2s ease-in-out infinite;
+}
+
+@keyframes coach-typing {
+  50% { opacity: .4; }
+}

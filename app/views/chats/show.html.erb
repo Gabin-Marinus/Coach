@@ -3,10 +3,20 @@
 
   <h1 id="chat_title" class="page-title mb-4"><%= @chat.title %></h1>
 
-  <div id="messages" class="mb-4">
+  <% if (saved_plan = @chat.plan_to_update) %>
+    <div class="alert alert-light border small mb-4">
+      This conversation made <%= link_to saved_plan.title, plan_profile_path %>. Tell your coach what to change
+      (e.g. "move the workout to Thursday", "no fish on weekdays"), then click <strong>Update <%= saved_plan.title %></strong>.
+    </div>
+  <% end %>
+
+  <%# Live updates: the coach's answer appears bit by bit (ChatResponseJob) %>
+  <%= turbo_stream_from @chat, :messages %>
+
+  <div id="messages" class="mb-4" data-controller="autoscroll">
     <% if @messages.empty? %>
       <% goals = current_user.goals.map { |g| User::GOALS[g] }.compact %>
-      <div class="text-muted">
+      <div id="chat_intro" class="text-muted">
         <% if goals.any? %>
           <p>
             Hi! I'm your Coach. Based on your goals (<strong><%= goals.join(", ") %></strong>),
@@ -26,40 +36,10 @@
 
     <% @messages.each do |message| %>
       <% next if message.content.blank? %>
-
-      <% if message.role == "user" %>
-        <div class="d-flex justify-content-end mb-2">
-          <div class="chat-bubble-user px-3 pt-3 pb-1">
-            <%= raw(render_markdown(message.content)) %>
-          </div>
-        </div>
-      <% else %>
-        <div class="d-flex justify-content-start mb-4">
-          <div class="px-3 pt-3 pb-1">
-            <%= raw(render_markdown(message.content)) %>
-          </div>
-        </div>
-      <% end %>
+      <%= render "messages/message", message: message %>
     <% end %>
   </div>
 
-  <% if @chat.plan_proposed? %>
-    <div class="text-center my-3">
-      <%= button_to "Save my plan", chat_plans_path(@chat),
-                    class: "btn btn-success btn-lg",
-                    data: {
-                      turbo_confirm: "Save my plan? Your current plan will be archived.",
-                      turbo_submits_with: "Creating your 1-month plan... this can take a minute or two ⏳"
-                    } %>
-    </div>
-  <% end %>
-
-  <div id="new_message_container">
-    <%= simple_form_for [@chat, @message] do |f| %>
-      <%= f.input :content, label: false,
-                  placeholder: "Ask your coach...",
-                  input_html: { rows: 3 } %>
-      <%= f.button :submit, "Send", class: "btn btn-primary" %>
-    <% end %>
-  </div>
+  <%= render "chats/plan_actions", chat: @chat %>
+  <%= render "chats/form", chat: @chat %>
 </div>

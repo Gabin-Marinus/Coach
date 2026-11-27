@@ -1,4 +1,4 @@
-<%# Expandable circuit of a workout: warm-up once, then "3 rounds of:" all exercises one after the other,
+<%# Expandable circuit of a workout: warm-up once, cardio if any (e.g. a 20 min run), then "3 rounds of:" all exercises,
     then cool-down once. Shows nothing for regular sessions (football, yoga...) and older plans. %>
 <% if workout.exercises.present? %>
   <details class="exercises" <%= "open" if local_assigns[:open] %>>
@@ -6,6 +6,10 @@
 
     <% if workout.warm_up.present? %>
       <p class="exercises-step"><strong>Warm-up:</strong> <%= workout.warm_up %></p>
+    <% end %>
+
+    <% if workout.cardio.present? %>
+      <p class="exercises-step"><strong>Cardio:</strong> <%= workout.cardio %></p>
     <% end %>
 
     <p class="exercises-step">

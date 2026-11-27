@@ -42,13 +42,14 @@ class PlanGenerator
     type: "object",
     additionalProperties: false,
     # In the order the workout is done, so the AI plans it that way: warm-up, rounds of exercises, cool-down
-    required: %w[weekday name description duration_min warm_up rounds round_rest_sec exercises cool_down],
+    required: %w[weekday name description duration_min warm_up cardio rounds round_rest_sec exercises cool_down],
     properties: {
       weekday: { type: "string", enum: Date::DAYNAMES }, # so regular sessions stay on their real day
       name: { type: "string" },
       description: { type: "string" },
       duration_min: { type: "integer" },
       warm_up: { type: "string" },
+      cardio: { type: "string" },           # before the circuit, e.g. "20 min easy run"; "" if none
       rounds: { type: "integer" },          # the whole exercise list is done this many times
       round_rest_sec: { type: "integer" },  # rest after each round
       exercises: {
@@ -67,20 +68,48 @@ class PlanGenerator
     }
   }.freeze
 
-  REGULAR_SESSION_SCHEMA = {
-    type: "object",
-    additionalProperties: false,
-    required: %w[weekday name duration_min],
-    properties: {
-      weekday: { type: "string", enum: Date::DAYNAMES },
-      name: { type: "string" },
-      duration_min: { type: "integer" }
+  # Sessions the user does on their own every week (boxing class, football...): they count in the training days.
+  # Asked in a separate, small AI call, so the week's answer has an exact number of new workouts to plan
+  # (in one big answer the AI sometimes counted "run 20 min, then exercises you suggest" as the user's own).
+  OWN_SESSIONS_SCHEMA = {
+    name: "own_sessions",
+    strict: true,
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      required: %w[own_sessions],
+      properties: {
+        own_sessions: {
+          type: "array", maxItems: 7,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: %w[weekday name duration_min],
+            properties: {
+              weekday: { type: "string", enum: Date::DAYNAMES },
+              name: { type: "string" },
+              duration_min: { type: "integer" }
+            }
+          }
+        }
+      }
     }
   }.freeze
 
-  def initialize(chat)
+  OWN_SESSIONS_PROMPT = <<~PROMPT
+    From the user's profile ("Regular sessions") and the coaching conversation, list the sessions the user
+    does COMPLETELY ON THEIR OWN every week: a class, a sport, a match, a club training (e.g. boxing on Saturday,
+    football on Tuesday, a yoga class). Use the weekday and length from the LAST plan the assistant proposed.
+    Do NOT list a session where the app plans any exercises: "I run 20 min and then do exercises you suggest",
+    a strength circuit, a gym workout from the plan. The app plans those, so they are not the user's own.
+    Empty list if there are none.
+  PROMPT
+
+  # plan: an existing plan to rebuild from the chat ("Update Plan #2"): same number and dates, new content
+  def initialize(chat, plan: nil)
     @chat = chat
     @user = chat.user
+    @plan = plan
   end
 
   def call
@@ -91,8 +120,7 @@ class PlanGenerator
     meal_weeks  = [first_week["meals"], second_week["meals"]]
 
     plan = ActiveRecord::Base.transaction do
-      # Plan copies the user's goals automatically (before_validation in Plan)
-      plan = @user.plans.create!(start_date: start_date, end_date: end_date)
+      plan = save_plan
       create_workouts(plan, first_week["workouts"])
       create_meals(plan, meal_weeks)
       plan
@@ -104,6 +132,16 @@ class PlanGenerator
   end
 
   private
+
+  # A new plan (it copies the user's goals, see Plan), or the plan being updated, emptied first
+  def save_plan
+    return @user.plans.create!(chat: @chat, start_date: start_date, end_date: end_date) if @plan.nil?
+
+    @plan.workouts.delete_all
+    @plan.meals.delete_all
+    @plan.update!(goals: @user.goals, chat: @chat, summary: nil, shopping_lists: {})
+    @plan
+  end
 
   # "Why this plan" text; the plan is still saved if this fails (it can be generated later)
   def add_summary(plan)
@@ -119,12 +157,13 @@ class PlanGenerator
     Rails.logger.warn("[PlanGenerator] Shopping lists failed: #{e.class}: #{e.message}")
   end
 
+  # An updated plan keeps its dates, so it stays the same month (and "Plan #2")
   def start_date
-    Date.today
+    @plan&.start_date || Date.today
   end
 
   def end_date
-    start_date + Plan::DURATION - 1.day
+    @plan&.end_date || (start_date + Plan::DURATION - 1.day)
   end
 
   # Yields the first day of every week of the plan, with the week index (0, 1, 2...)
@@ -146,7 +185,7 @@ class PlanGenerator
         next if date > end_date
 
         plan.workouts.create!(workout.slice("name", "description", "duration_min", "exercises",
-                                             "warm_up", "rounds", "round_rest_sec", "cool_down").merge("date" => date))
+                                             "warm_up", "cardio", "rounds", "round_rest_sec", "cool_down").merge("date" => date))
       end
     end
   end
@@ -205,10 +244,10 @@ class PlanGenerator
     end
   end
 
-  # Regular sessions + new workouts = the user's training days
+  # Every planned workout has its circuit, and together with the own sessions they fill the training days
   def enough_workouts?(week)
-    regular, new_workouts = week["workouts"].partition { |workout| workout["regular"] }
-    new_workouts.size >= new_workouts_needed(regular.size)
+    planned = week["workouts"].reject { |workout| workout["regular"] }
+    planned.size >= new_workouts_needed && planned.all? { |workout| Array(workout["exercises"]).size >= 4 }
   end
 
   # Calorie and protein targets; the workouts count once week 1 is known (see #call)
@@ -249,6 +288,13 @@ class PlanGenerator
     others.map { |other| [(day - other) % 7, (other - day) % 7].min }.min
   end
 
+  def own_sessions_rule
+    return "The user has no sessions of their own: the app plans all of them." if own_sessions.empty?
+
+    list = own_sessions.map { |session| "#{session['name']} on #{session['weekday']}" }.to_sentence
+    "The user already does #{list} on their own: these are in the plan already, do not plan them again."
+  end
+
   def default_training_weekdays
     TRAINING_DAYS_SPREAD.fetch(training_days, [1]).map { |day| (start_date + (day - 1)).strftime("%A") }.to_sentence
   end
@@ -287,10 +333,9 @@ class PlanGenerator
     meals_of_a_day = { type: "array", items: MEAL_SCHEMA, minItems: meals_per_day, maxItems: meals_per_day }
     properties = {}
     if workouts
-      # Written first: the sessions the user already does every week (profile and chat), then the new
-      # workouts to reach the profile's training days in total (checked in #usable?, trimmed in #parse_week)
-      properties[:regular_sessions] = { type: "array", items: REGULAR_SESSION_SCHEMA, maxItems: 7 }
-      properties[:workouts] = { type: "array", items: WORKOUT_SCHEMA, maxItems: training_days }
+      # Exactly the workouts the app plans: the training days minus the user's own sessions (boxing...)
+      count = new_workouts_needed
+      properties[:workouts] = { type: "array", items: WORKOUT_SCHEMA, minItems: count, maxItems: count }
     end
     # Before the meals, so the AI plans a short shopping list and varied dishes first
     properties[:week_ingredients] = { type: "array", items: { type: "string" }, maxItems: MAX_WEEK_INGREDIENTS }
@@ -316,13 +361,14 @@ properties: properties }
     meals = DAYS.each_with_index.flat_map do |day, index|
       Array(answer.dig("days", day)).map { |meal| meal.merge("day" => index + 1) }
     end
-    regular = Array(answer["regular_sessions"]).map do |session|
+    return { "workouts" => [], "meals" => meals } unless answer.key?("workouts") # week 2: meals only
+
+    # The user's own sessions (boxing...) are part of the plan too, without exercises
+    own = own_sessions.map do |session|
       session.merge("description" => "Your regular weekly session: it's part of your plan, keep it up!",
                     "exercises" => [], "regular" => true)
     end
-    # The regular sessions count in the user's training days: only the missing ones are new workouts
-    new_workouts = Array(answer["workouts"]).first(new_workouts_needed(regular.size))
-    { "workouts" => regular + new_workouts, "meals" => meals }
+    { "workouts" => own + Array(answer["workouts"]), "meals" => meals }
   end
 
   def conversation
@@ -342,8 +388,21 @@ properties: properties }
   end
 
   # 2 training days with boxing on Saturday => 1 new workout
-  def new_workouts_needed(regular_count)
-    [training_days - regular_count, 0].max
+  def new_workouts_needed
+    [training_days - own_sessions.size, 0].max
+  end
+
+  # [{ "weekday" => "Saturday", "name" => "Boxing", "duration_min" => 60 }], asked once (see OWN_SESSIONS_PROMPT)
+  def own_sessions
+    @own_sessions ||= begin
+      question = "#{@user.coach_context}\n\nConversation:\n#{conversation}"
+      answer = RubyLLM.chat.with_instructions(OWN_SESSIONS_PROMPT).with_thinking(effort: :low)
+                      .with_schema(OWN_SESSIONS_SCHEMA).ask(question).parsed
+      Array(answer["own_sessions"]).first(training_days)
+    rescue RubyLLM::Error => e
+      Rails.logger.warn("[PlanGenerator] Own sessions failed, planning all training days: #{e.message}")
+      []
+    end
   end
 
   # The most important rules come first: with low thinking effort the AI follows the top of the list best
@@ -415,28 +474,26 @@ properties: properties }
       #{@user.coach_context}
 
       Workout rules:
-      - The user trains #{training_days} days per week IN TOTAL. Their regular sessions count in this number.
-      - "regular_sessions": the sessions the user already does on their own every week, from "Regular sessions"
-        in the profile and from the conversation (e.g. boxing on Saturday, a football match on Tuesday), on
-        their usual weekday, with their real length. Only sessions the app doesn't need to plan. Empty if none.
-      - "workouts": the NEW workouts the app plans: #{training_days} minus the number of regular sessions
-        (e.g. #{training_days} training days and 1 regular session = #{[training_days - 1, 0].max} new workouts;
-        none if the regular sessions already fill the training days). On other days than the regular sessions,
-        with rest days in between. Without regular sessions, use #{default_training_weekdays}.
+      - The user trains #{training_days} days per week IN TOTAL. #{own_sessions_rule}
+      - "workouts": exactly #{new_workouts_needed} NEW workouts that the app plans, each with warm-up, rounds and
+        exercises, on other days than the user's own sessions, with rest days in between.
+        #{own_sessions.empty? ? "Use #{default_training_weekdays}, unless the conversation chose other days." : ''}
       - If the user described the format of a session or asked the app to fill part of it (e.g. "I run 20 min and
-        then do exercises you suggest"), it is one of the NEW workouts, built exactly that way: put the run in
-        "warm_up" (e.g. "20 min easy run"), then a strength circuit, and count the run in "duration_min".
-        Never replace it with another kind of session (no HIIT instead of the run). It is not a regular session.
+        then do exercises you suggest"), it is one of the NEW workouts, built exactly that way: the run goes in
+        "cardio" (e.g. "20 min easy run", done after the warm-up), then the strength circuit, and "duration_min"
+        counts both (e.g. 20 min run + 25 min circuit = 45 min).
+        Never replace it with another kind of session (no HIIT instead of the run).
       - Spread the sessions over the week: at least one rest day between two sessions when possible
         (e.g. boxing on Saturday + 1 new workout => Tuesday or Wednesday, not Friday or Sunday).
       - New workouts follow the plan proposed in the conversation and respect the user's session length, equipment, training location, injuries and exercise dislikes.
       - Each new workout is a circuit: "warm_up" (done once, e.g. "5 min brisk walk + arm circles"),
-        then "rounds" of ALL "exercises" one after the other, with "round_rest_sec" rest after each round,
+        then "cardio" if the session has any (e.g. "20 min easy run"; "" otherwise), then "rounds" of ALL
+        "exercises" one after the other, with "round_rest_sec" rest after each round,
         then "cool_down" (done once). Exercises are only the main moves (no warm-up or stretches in the list),
         each with reps or time per round and one short technique tip.
         Match the user's fitness level (beginner: 2-3 rounds, simple moves; intermediate: 3-4 rounds),
         goals (strength: 6-10 reps; muscle: 8-12; endurance: 15+ or 30-45 sec) and session length.
-      - Each workout is shown to the user: "name" is a short title without the word "new" (e.g. "Full body strength A"),
+      - Each workout is shown to the user: "name" is a short title without the word "new" or a weekday (e.g. "Run + full body strength"),
         "description" one sentence about its focus (e.g. "Legs and back, with a short core finisher").
         Exercise "name" is only the exercise (e.g. "Goblet squat"): the reps go in their own field.
 

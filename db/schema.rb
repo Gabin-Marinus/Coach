@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_27_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,6 +101,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_110000) do
     t.string "goals", default: [], array: true
     t.text "summary"
     t.jsonb "shopping_lists", default: {}, null: false
+    t.bigint "chat_id"
+    t.index ["chat_id"], name: "index_plans_on_chat_id"
     t.index ["user_id"], name: "index_plans_on_user_id"
   end
 
@@ -446,6 +448,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_110000) do
     t.integer "round_rest_sec"
     t.string "warm_up"
     t.string "cool_down"
+    t.string "cardio"
     t.index ["plan_id"], name: "index_workouts_on_plan_id"
   end
 
@@ -455,6 +458,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_27_110000) do
   add_foreign_key "chats", "users"
   add_foreign_key "meals", "plans"
   add_foreign_key "messages", "chats"
+  add_foreign_key "plans", "chats", on_delete: :nullify
   add_foreign_key "plans", "users"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

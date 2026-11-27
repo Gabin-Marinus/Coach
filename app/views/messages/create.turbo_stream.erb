@@ -1,0 +1,7 @@
+<%# Right after sending: the user's message, a "typing" bubble, and the form locked until the answer is done %>
+<%= turbo_stream.remove "chat_intro" %>
+<%= turbo_stream.append "messages" do %>
+  <%= render "messages/message", message: @message %>
+  <%= render "messages/pending", chat: @chat, question: @message %>
+<% end %>
+<%= turbo_stream.replace "new_message_container", partial: "chats/form", locals: { chat: @chat, disabled: true } %>

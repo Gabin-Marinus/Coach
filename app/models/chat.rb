@@ -1,6 +1,7 @@
 class Chat < ApplicationRecord
   acts_as_chat
   belongs_to :user
+  has_many :plans, dependent: :nullify # the plans made in this chat (plan chats only)
 
   KINDS = %w[plan coach].freeze
 
@@ -98,7 +99,8 @@ class Chat < ApplicationRecord
       equipment, injuries and time, keep the calories and macros close, and use simple, local,
       seasonal food (see "Food season and location"), ideally ingredients already in my week's meals.
     - Keep my groceries within my food budget, using realistic local prices.
-    - You cannot change my plan in the app. If I want a completely new plan, tell me to click
+    - You cannot change my plan here. To adjust it, tell me to click **Adjust in chat** on my plan page
+      (the conversation where the plan was made). If I want a completely new plan, tell me to click
       **New plan** at the top of the page.
     - If I have no current plan, help me with my profile and tell me to click **New plan**.
 
@@ -118,7 +120,8 @@ class Chat < ApplicationRecord
   def instructions
     prompt = coach? ? COACH_PROMPT : SYSTEM_PROMPT
     plan_context = user.current_plan&.coach_context if coach?
-    [prompt, season_context, "## Calories\n#{user.nutrition_targets.to_prompt}", user.coach_context, plan_context]
+    [prompt, season_context, "## Calories\n#{user.nutrition_targets.to_prompt}", user.coach_context, plan_context,
+     plan_to_update_context]
       .compact.join("\n\n")
   end
 
@@ -139,12 +142,31 @@ class Chat < ApplicationRecord
     [MAX_COACH_QUESTIONS - questions_asked, 0].max
   end
 
+  # The plan this chat made, if it is still the current plan: the chat can update it ("Update Plan #2")
+  def plan_to_update
+    plan = plans.order(:created_at).last
+    plan if plan&.status == "active"
+  end
+
   def plan_proposed?
     messages.where(role: "assistant")
-            .where("content ILIKE ?", "%Save my plan%")
+            .where("content ILIKE ANY (ARRAY['%Save my plan%', '%Update my plan%'])")
             .exists?
   end
 
   private
 
+  # In a chat that already made the current plan: the coach knows it and adjusts it instead of starting over
+  def plan_to_update_context
+    plan = plan_to_update
+    return if coach? || plan.nil?
+
+    <<~TEXT
+      ## The plan this conversation already saved: #{plan.title}
+      This conversation created #{plan.title} (#{plan.timeframe}). I came back to adjust it.
+      When I ask for changes, keep everything else as it is, propose the updated plan in the same format,
+      and end with exactly: "If you are happy with the changes, click **Update my plan**."
+      #{plan.coach_context}
+    TEXT
+  end
 end

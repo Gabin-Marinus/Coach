@@ -1,5 +1,6 @@
 class Plan < ApplicationRecord
   belongs_to :user
+  belongs_to :chat, optional: true # the chat it was made in ("Adjust in chat"); nil if that chat was deleted
   has_many :workouts, dependent: :destroy
   has_many :meals, dependent: :destroy
 

@@ -1,0 +1,5 @@
+<%# The answer's bubble: "typing" first, then filled bit by bit by ChatResponseJob (turbo_stream.update) %>
+<div id="<%= question.answer_dom_id %>"
+     class="<%= chat.coach? ? 'coach-message coach-message-assistant' : 'd-flex justify-content-start mb-4' %>">
+  <%= render "messages/answer_body", chat: chat, content: nil %>
+</div>

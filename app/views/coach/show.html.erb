@@ -1,10 +1,11 @@
 <%# Shown inside the coach panel (turbo frame "coach"). Links in answers open in the full page. %>
 <%= turbo_frame_tag "coach", target: "_top", class: "coach-frame" do %>
-  <% questions_left = @chat ? @chat.questions_left : Chat::MAX_COACH_QUESTIONS %>
+  <%# Live updates: the coach's answer appears bit by bit (ChatResponseJob) %>
+  <%= turbo_stream_from @chat, :messages if @chat %>
 
-  <div class="coach-messages" data-controller="coach" data-coach-target="messages">
+  <div id="coach_messages" class="coach-messages" data-controller="coach autoscroll" data-coach-target="messages">
     <% if @messages.empty? %>
-      <div class="coach-intro">
+      <div id="coach_intro" class="coach-intro">
         <p class="mb-2"><strong>Hi! 👋 I'm your coach.</strong></p>
         <p class="mb-3">
           <% if current_user.current_plan %>
@@ -24,9 +25,7 @@
     <% end %>
 
     <% @messages.each do |message| %>
-      <div class="coach-message coach-message-<%= message.role %>">
-        <%= raw(render_markdown(message.content)) %>
-      </div>
+      <%= render "messages/message", message: message %>
     <% end %>
 
     <% if flash[:coach_error] %>
@@ -34,28 +33,5 @@
     <% end %>
   </div>
 
-  <div class="coach-footer">
-    <div class="d-flex justify-content-between align-items-center mb-2 small">
-      <span class="text-muted"><%= questions_left %> of <%= Chat::MAX_COACH_QUESTIONS %> questions left</span>
-      <% if @messages.any? %>
-        <%= button_to "New conversation", reset_coach_path, class: "btn btn-link btn-sm p-0 text-muted",
-                      form: { data: { turbo_frame: "coach" } } %>
-      <% end %>
-    </div>
-
-    <% if questions_left.positive? %>
-      <%= form_with url: ask_coach_path, data: { turbo_frame: "coach", controller: "coach" }, class: "coach-form" do |f| %>
-        <%= f.text_area :content, rows: 2, maxlength: Chat::MAX_QUESTION_LENGTH, required: true,
-                        placeholder: "Ask your coach…", class: "form-control",
-                        data: { action: "keydown->coach#submitOnEnter" } %>
-        <%= f.button "Send", class: "btn btn-primary", data: { turbo_submits_with: "…" } %>
-      <% end %>
-    <% else %>
-      <div class="coach-limit">
-        <p class="mb-2">You've used all <%= Chat::MAX_COACH_QUESTIONS %> questions in this conversation.</p>
-        <%= button_to "Start a new conversation", reset_coach_path, class: "btn btn-primary btn-sm",
-                      form: { data: { turbo_frame: "coach" } } %>
-      </div>
-    <% end %>
-  </div>
+  <%= render "coach/footer", chat: @chat %>
 <% end %>
