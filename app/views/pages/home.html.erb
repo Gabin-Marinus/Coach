@@ -8,7 +8,7 @@
     <div class="dash-hero">
       <p class="page-eyebrow">Your AI fitness coach</p>
       <h1 class="dash-title">Train. Eat. <span class="dash-highlight">Progress.</span></h1>
-      <p class="dash-muted">A personal 3-month plan for your workouts and meals, one day at a time.</p>
+      <p class="dash-muted">A personal 1-month plan for your workouts and meals, one day at a time.</p>
       <div class="d-flex gap-2 mt-4">
         <%= link_to "Get started", new_user_registration_path, class: "btn btn-primary" %>
         <%= link_to "Log in", new_user_session_path, class: "btn btn-outline-secondary" %>
@@ -26,7 +26,7 @@
       <div class="dash-card dash-empty">
         <% if @user.ready_for_plan? %>
           <h2 class="dash-card-title">No plan yet</h2>
-          <p class="dash-muted">Chat with your coach to build your 3-month plan.</p>
+          <p class="dash-muted">Chat with your coach to build your 1-month plan.</p>
           <%= button_to "Create my plan", chats_path, method: :post, class: "btn btn-primary" %>
         <% else %>
           <h2 class="dash-card-title">Let's get you set up</h2>
@@ -94,6 +94,9 @@
                    meta: "#{meal.calories.to_i} kcal · P #{meal.protein_g.to_i} g · C #{meal.carbs_g.to_i} g · F #{meal.fat_g.to_i} g",
                    details: meal.recipe %>
       <% end %>
+
+      <h2 class="section-title">This week's shopping</h2>
+      <%= render "shared/shopping_list", plan: @plan, week: @plan.week_of(@date) %>
 
       <div class="text-center mt-4">
         <%= link_to "See my full plan →", plan_profile_path, class: "link-underline-accent" %>

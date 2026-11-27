@@ -10,7 +10,9 @@ class ChatsController < ApplicationController
   end
 
   def create
-    @chat = current_user.chats.plan_chats.new(title: Chat::DEFAULT_TITLE, model: RubyLLM.config.default_model)
+    # Named after the plan it will make: "Plan #3" if the user already has 2 plans
+    title = "Plan ##{current_user.plans.count + 1}"
+    @chat = current_user.chats.plan_chats.new(title: title, model: RubyLLM.config.default_model)
 
     if @chat.save
       redirect_to chat_path(@chat)

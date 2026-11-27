@@ -160,3 +160,30 @@
   .coach-fab-label { display: none; }
   .coach-fab { padding: 0 16px; }
 }
+
+// Budget suggestion buttons on the profile form: same look as the secondary buttons
+.budget-chip {
+  padding: 6px 14px;
+  border: 1px solid $border-strong;
+  border-radius: 999px;
+  background: transparent;
+  color: $text;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $text-muted;
+  }
+}
+
+// "Your coach is typing…" while the answer streams in
+.coach-typing {
+  color: $text-muted;
+  font-style: italic;
+  animation: coach-typing 1.2s ease-in-out infinite;
+}
+
+@keyframes coach-typing {
+  50% { opacity: .4; }
+}

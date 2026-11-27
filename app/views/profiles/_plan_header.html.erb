@@ -21,6 +21,13 @@
                   class: "btn #{section == 'Meals' ? 'btn-primary' : 'btn-outline-secondary'}" %>
     </div>
 
+    <% if plan.chat && plan.status == "active" %>
+      <%# Back to the conversation the plan was made in, to change it with all that context %>
+      <%= link_to chat_path(plan.chat), class: "btn btn-sm btn-outline-secondary" do %>
+        <i class="fa-regular fa-comments me-1"></i> Adjust in chat
+      <% end %>
+    <% end %>
+
     <button type="button" class="btn btn-sm btn-neon" data-bs-toggle="modal" data-bs-target="#calendarModal">
       <i class="fa-regular fa-calendar-plus me-1"></i> Add to calendar
     </button>

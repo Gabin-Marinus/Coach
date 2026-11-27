@@ -69,6 +69,7 @@ class ProfilesController < ApplicationController
       :activity_level, :diet_type, :food_dislikes, :meals_per_day, :cooking_time,
       :fitness_level, :training_location, :training_days_per_week,
       :session_minutes, :preferred_time, :injury_notes, :exercise_dislikes,
+      :city, :country, :food_budget, :food_budget_period, :currency, :favorite_meals, :regular_sessions,
       allergies: [], exercise_types: [], equipment: [], injuries: [], goals: []
     )
   end

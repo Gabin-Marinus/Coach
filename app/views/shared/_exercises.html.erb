@@ -1,0 +1,39 @@
+<%# Expandable circuit of a workout: warm-up once, cardio if any (e.g. a 20 min run), then "3 rounds of:" all exercises,
+    then cool-down once. Shows nothing for regular sessions (football, yoga...) and older plans. %>
+<% if workout.exercises.present? %>
+  <details class="exercises" <%= "open" if local_assigns[:open] %>>
+    <summary>Exercises (<%= workout.exercises.size %>)</summary>
+
+    <% if workout.warm_up.present? %>
+      <p class="exercises-step"><strong>Warm-up:</strong> <%= workout.warm_up %></p>
+    <% end %>
+
+    <% if workout.cardio.present? %>
+      <p class="exercises-step"><strong>Cardio:</strong> <%= workout.cardio %></p>
+    <% end %>
+
+    <p class="exercises-step">
+      <strong><%= workout.rounds ? "#{pluralize(workout.rounds, 'round')} of:" : "Exercises:" %></strong>
+      <% if workout.round_rest_sec.to_i.positive? %>
+        <span class="text-muted">rest <%= workout.round_rest_sec %> s after each round</span>
+      <% end %>
+    </p>
+    <ol class="exercises-list">
+      <% workout.exercises.each do |exercise| %>
+        <li>
+          <div class="exercises-row">
+            <span class="exercises-name"><%= exercise["name"] %></span>
+            <span class="exercises-dose"><%= exercise["reps"] %></span>
+          </div>
+          <% if exercise["tip"].present? %>
+            <div class="exercises-tip"><%= exercise["tip"] %></div>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+
+    <% if workout.cool_down.present? %>
+      <p class="exercises-step"><strong>Cool-down:</strong> <%= workout.cool_down %></p>
+    <% end %>
+  </details>
+<% end %>

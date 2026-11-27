@@ -8,6 +8,7 @@
   <% else %>
     <%= render "plan_header", plan: @plan, week: @week, section: nil %>
     <%= render "week_navigation", plan: @plan, week: @week %>
+    <%= render "shared/shopping_list", plan: @plan, week: @week %>
 
     <% @dates.each do |date| %>
       <% day_workouts = @workouts_by_date[date] || [] %>
@@ -35,6 +36,7 @@
                   <strong><%= workout.name %></strong>
                   <% if workout.duration_min %> · <%= workout.duration_min %> min<% end %>
                   <div class="small text-muted"><%= workout.description %></div>
+                  <%= render "shared/exercises", workout: workout %>
                 </div>
                 <%= render "shared/status_actions", record: workout %>
               </div>

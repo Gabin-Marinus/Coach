@@ -7,9 +7,12 @@ class PlansController < ApplicationController
       return
     end
 
-    PlanGenerator.new(@chat).call
-    redirect_to workouts_profile_path, notice: "Your 3-month plan was saved! 🎉"
-  rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error
+    # "Update Plan #2" rebuilds the plan this chat made; "Save my plan" makes a new one
+    plan = @chat.plan_to_update if params[:update] == "true"
+    PlanGenerator.new(@chat, plan: plan).call
+    notice = plan ? "#{plan.title} was updated! 🎉" : "Your 1-month plan was saved! 🎉"
+    redirect_to workouts_profile_path, notice: notice
+  rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error, PlanGenerator::Error
     redirect_to chat_path(@chat), alert: "Sorry, we couldn't save your plan. Please try again."
   end
 
@@ -20,6 +23,18 @@ class PlansController < ApplicationController
     redirect_back fallback_location: plan_profile_path, notice: "Here's what your plan is based on."
   rescue RubyLLM::Error
     redirect_back fallback_location: plan_profile_path, alert: "Your coach is unavailable right now. Please try again."
+  end
+
+  # "Create shopping list" button, for plans saved before shopping lists existed
+  def shopping_list
+    plan = current_user.plans.find(params[:id])
+    first_weeks = plan.start_date...(plan.start_date + PlanGenerator::WEEKS_IN_ROTATION.weeks) # the meals repeat after that
+    MealIngredients.new(plan, plan.meals.where(date: first_weeks)).call
+    ShoppingListWriter.new(plan).call
+    redirect_back fallback_location: plan_profile_path, notice: "Your shopping list is ready! 🛒"
+  rescue RubyLLM::Error, JSON::ParserError
+    redirect_back fallback_location: plan_profile_path,
+                  alert: "Sorry, we couldn't make your shopping list. Please try again."
   end
 
   # "Add to calendar": downloads the plan as an .ics file (Google Calendar, Apple Calendar, Outlook...)

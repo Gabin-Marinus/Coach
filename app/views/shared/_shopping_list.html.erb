@@ -1,0 +1,57 @@
+<%# Expandable shopping list for one week of a plan (My plan page and dashboard) %>
+<% list = plan.shopping_list(week) %>
+
+<% unless list.empty? %>
+<details class="shopping-list">
+  <summary>
+    <span class="shopping-list-icon"><i class="fa-solid fa-basket-shopping"></i></span>
+    <span>
+      Shopping list · Week <%= week %>
+      <span class="shopping-list-dates">
+        <%= list.dates.first.strftime("%a %b %-d") %> – <%= list.dates.last.strftime("%a %b %-d") %>
+        <% if list.ready? %> · <%= pluralize(list.items.size, "item") %><% end %>
+      </span>
+    </span>
+  </summary>
+
+  <div class="shopping-list-body">
+    <% if list.ready? %>
+      <% if list.short_week? %>
+        <p class="small mb-1">
+          <strong>Short week:</strong> your plan ends on <%= list.dates.last.strftime("%A") %>,
+          so you'll need less than this full-week list.
+        </p>
+      <% end %>
+      <p class="small text-muted mb-1">For all meals of the week. Tick things off as you shop.</p>
+
+      <% list.by_category.each do |category, items| %>
+        <h3 class="shopping-list-category"><%= category %></h3>
+        <ul class="shopping-list-items">
+          <% items.each do |item| %>
+            <li>
+              <label>
+                <input type="checkbox" class="form-check-input">
+                <span class="shopping-list-name">
+                  <%= item.name %>
+                  <% if item.tip %><span class="shopping-list-tip"><%= item.tip %></span><% end %>
+                </span>
+                <span class="shopping-list-quantity"><%= item.buy %></span>
+              </label>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+
+      <% if list.pantry.any? %>
+        <p class="shopping-list-pantry">
+          <strong>Check you have:</strong> <%= list.pantry.to_sentence %>
+        </p>
+      <% end %>
+    <% else %>
+      <p class="mb-2">This plan was made before shopping lists existed. Your coach can make one from your meals.</p>
+      <%= button_to "Create shopping list", shopping_list_plan_path(plan),
+                    class: "btn btn-sm btn-neon", data: { turbo_submits_with: "Writing your list… ⏳" } %>
+    <% end %>
+  </div>
+</details>
+<% end %>

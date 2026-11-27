@@ -1,0 +1,18 @@
+<%# One saved chat message, in the plan chat or the coach panel (a streaming answer: see _pending) %>
+<% if message.chat.coach? %>
+  <div id="<%= dom_id(message) %>" class="coach-message coach-message-<%= message.role %>">
+    <%= raw(render_markdown(message.content)) %>
+  </div>
+<% elsif message.role == "user" %>
+  <div id="<%= dom_id(message) %>" class="d-flex justify-content-end mb-2">
+    <div class="chat-bubble-user px-3 pt-3 pb-1">
+      <%= raw(render_markdown(message.content)) %>
+    </div>
+  </div>
+<% else %>
+  <div id="<%= dom_id(message) %>" class="d-flex justify-content-start mb-4">
+    <div class="px-3 pt-3 pb-1">
+      <%= raw(render_markdown(message.content)) %>
+    </div>
+  </div>
+<% end %>

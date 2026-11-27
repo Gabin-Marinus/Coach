@@ -1,10 +1,11 @@
 class Plan < ApplicationRecord
   belongs_to :user
+  belongs_to :chat, optional: true # the chat it was made in ("Adjust in chat"); nil if that chat was deleted
   has_many :workouts, dependent: :destroy
   has_many :meals, dependent: :destroy
 
   STATUSES = %w[active archived].freeze
-  DURATION = 3.months
+  DURATION = 1.month
 
   # Take the user's current goals if none were given
   before_validation { self.goals = user.goals if goals.blank? && user }
@@ -55,6 +56,15 @@ class Plan < ApplicationRecord
     first_day..[first_day + 6.days, end_date].min
   end
 
+  # Week number of a date: 1 for the first 7 days of the plan...
+  def week_of(date)
+    (((date - start_date).to_i / 7) + 1).clamp(1, total_weeks)
+  end
+
+  def shopping_list(week)
+    ShoppingList.new(self, week)
+  end
+
   # Details of this plan for the coach: progress, this week, and today in full
   def coach_context(today = Date.today)
     week = week_dates(current_week)
@@ -96,6 +106,7 @@ class Plan < ApplicationRecord
       day_workouts.each do |w|
         lines << "- Workout: #{w.name} (#{w.duration_min || '?'} min) [#{w.status}]"
         lines << "  #{w.description}" if full && w.description.present?
+        w.exercise_lines.each { |line| lines << "  - #{line}" } if full
       end
     end
     day_meals.each do |m|
