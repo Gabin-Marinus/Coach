@@ -1,6 +1,5 @@
 // Floating coach button (bottom right) + side panel
 
-// Lime button with black text
 .coach-fab {
   position: fixed;
   right: 20px;
@@ -11,29 +10,27 @@
   gap: 8px;
   height: 52px;
   padding: 0 20px 0 16px;
-  border: none;
+  border: 2px solid $fit-green;
   border-radius: 50rem;
-  background: $lime;
-  color: $black;
+  background: $fit-black;
+  color: $fit-green;
   font-weight: 700;
-  box-shadow: 0 8px 24px rgba(#000, .5);
-  transition: transform .15s ease, background .15s ease;
+  box-shadow: 0 8px 24px rgba($fit-black, .3);
+  transition: transform .15s ease;
 
   i { font-size: 20px; }
 
-  &:hover { transform: translateY(-2px); background: $lime-hover; }
+  &:hover { transform: translateY(-2px); }
 }
 
 .coach-panel {
   --bs-offcanvas-width: 420px;
-  --bs-offcanvas-bg: #{$black};
-  --bs-offcanvas-color: #{$text};
+  --bs-offcanvas-bg: #{$fit-white};
 
   .offcanvas-header {
     align-items: flex-start;
-    border-bottom: 1px solid $border;
-    background: $surface;
-    color: $text;
+    background: $fit-black;
+    color: $fit-white;
   }
 
   .offcanvas-title {
@@ -49,7 +46,7 @@
     width: 10px;
     height: 10px;
     border-radius: 3px;
-    background: $lime;
+    background: $fit-green;
   }
 
   .offcanvas-body {
@@ -63,7 +60,7 @@
 .coach-panel-subtitle {
   margin: 2px 0 0;
   font-size: 13px;
-  color: $text-muted;
+  color: rgba($fit-white, .55);
 }
 
 .coach-frame {
@@ -82,25 +79,22 @@
 .coach-intro {
   padding: 16px;
   border-radius: 16px;
-  background: $surface;
-  border: 1px solid $card-border;
-  box-shadow: $card-shadow;
+  background: #FFFFFF;
+  border: 1px solid rgba($fit-black, .08);
   font-size: 14px;
 }
 
-// Suggested questions: same look as the secondary buttons
 .coach-suggestion {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid $border-strong;
+  border: 1px solid rgba($fit-black, .12);
   border-radius: 12px;
-  background: transparent;
-  color: $text;
+  background: $fit-white;
   font-size: 13px;
   font-weight: 600;
   text-align: left;
 
-  &:hover { border-color: $text-muted; }
+  &:hover { border-color: $fit-black; }
 }
 
 .coach-message {
@@ -117,15 +111,14 @@
 .coach-message-user {
   margin-left: auto;
   border-bottom-right-radius: 4px;
-  background: $border;
-  color: $text;
+  background: $fit-black;
+  color: $fit-white;
 }
 
 .coach-message-assistant {
   border-bottom-left-radius: 4px;
-  background: $surface;
-  border: 1px solid $card-border;
-  box-shadow: $card-shadow;
+  background: #FFFFFF;
+  border: 1px solid rgba($fit-black, .08);
 }
 
 .coach-error {
@@ -135,8 +128,8 @@
 
 .coach-footer {
   padding: 12px 16px 16px;
-  border-top: 1px solid $border;
-  background: $surface;
+  border-top: 1px solid rgba($fit-black, .08);
+  background: #FFFFFF;
 }
 
 .coach-form {
@@ -150,8 +143,7 @@
 .coach-limit {
   padding: 12px;
   border-radius: 12px;
-  background: $border;
-  color: $text;
+  background: $fit-green-40;
   font-size: 14px;
 }
 
@@ -161,25 +153,25 @@
   .coach-fab { padding: 0 16px; }
 }
 
-// Budget suggestion buttons on the profile form: same look as the secondary buttons
+// Budget suggestion buttons on the profile form
 .budget-chip {
   padding: 6px 14px;
-  border: 1px solid $border-strong;
+  border: 1px solid rgba($fit-black, .15);
   border-radius: 999px;
-  background: transparent;
-  color: $text;
+  background: $fit-white;
   font-size: 14px;
   font-weight: 600;
 
   &:hover,
   &:focus-visible {
-    border-color: $text-muted;
+    background: $fit-green;
+    border-color: $fit-black;
   }
 }
 
 // "Your coach is typing…" while the answer streams in
 .coach-typing {
-  color: $text-muted;
+  color: rgba($fit-black, .55);
   font-style: italic;
   animation: coach-typing 1.2s ease-in-out infinite;
 }

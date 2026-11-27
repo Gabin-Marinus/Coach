@@ -1,9 +1,9 @@
-// App-wide look: black background, dark grey cards, lime + orange accents
+// App-wide look: black + neon green, used by every page
 
 // ---------- Page layout (same width everywhere) ----------
 .page {
   width: 100%;
-  max-width: 1000px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 32px 16px 104px; // room for the coach button
 }
@@ -23,7 +23,7 @@
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: rgba($fit-black, .5);
 }
 
 .page-title {
@@ -35,7 +35,7 @@
 
 .page-subtitle {
   margin: 4px 0 0;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
 }
 
 .back-link {
@@ -43,14 +43,13 @@
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: 600;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
   text-decoration: none;
 
-  &:hover { color: $text; }
+  &:hover { color: $fit-black; }
 }
 
-// Goal number on the Today page
-.text-accent { color: $orange; }
+.text-accent { color: $fit-green; }
 
 .section-title {
   margin: 24px 0 10px;
@@ -58,74 +57,57 @@
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: rgba($fit-black, .5);
 }
 
 // ---------- Buttons ----------
-// Primary ("Done", "Create my plan", ...): lime with black text
-.btn-primary,
+.btn-primary {
+  --bs-btn-color: #{$fit-green};
+  --bs-btn-hover-color: #{$fit-green};
+  --bs-btn-hover-bg: #{$fit-black-88};
+  --bs-btn-hover-border-color: #{$fit-black-88};
+  --bs-btn-active-color: #{$fit-green};
+  --bs-btn-disabled-color: #{$fit-green};
+}
+
 .btn-success {
-  --bs-btn-color: #{$black};
-  --bs-btn-bg: #{$lime};
-  --bs-btn-border-color: #{$lime};
-  --bs-btn-hover-color: #{$black};
-  --bs-btn-hover-bg: #{$lime-hover};
-  --bs-btn-hover-border-color: #{$lime-hover};
-  --bs-btn-active-color: #{$black};
-  --bs-btn-active-bg: #{$lime-hover};
-  --bs-btn-active-border-color: #{$lime-hover};
-  --bs-btn-disabled-color: #{$black};
-  --bs-btn-disabled-bg: #{$lime};
-  --bs-btn-disabled-border-color: #{$lime};
+  --bs-btn-color: #{$fit-black};
+  --bs-btn-hover-color: #{$fit-black};
+  --bs-btn-active-color: #{$fit-black};
 }
 
-// Secondary ("Skip", "Log in", ...): transparent with a grey border
 .btn-outline-secondary {
-  --bs-btn-color: #{$text};
-  --bs-btn-border-color: #{$border-strong};
-  --bs-btn-hover-color: #{$text};
+  --bs-btn-color: #{rgba($fit-black, .7)};
+  --bs-btn-border-color: #{rgba($fit-black, .15)};
+  --bs-btn-hover-color: #{$fit-black};
   --bs-btn-hover-bg: transparent;
-  --bs-btn-hover-border-color: #{$text-muted};
-  --bs-btn-active-color: #{$text};
+  --bs-btn-hover-border-color: #{$fit-black};
+  --bs-btn-active-color: #{$fit-black};
   --bs-btn-active-bg: transparent;
-  --bs-btn-active-border-color: #{$text-muted};
-}
-
-// "New plan", "Add to calendar": same lime look as the primary buttons
-.btn-neon {
-  background: $lime;
-  color: $black;
-  font-weight: 700;
-
-  &:hover,
-  &:focus-visible { background: $lime-hover; color: $black; }
+  --bs-btn-active-border-color: #{$fit-black};
 }
 
 // ---------- Cards ----------
-.card {
-  background: $surface;
-  border-color: $card-border;
-  box-shadow: $card-shadow;
-}
+.card { background: #FFFFFF; }
 
 .card-today {
-  border-left: 3px solid $orange;
+  border-left: 4px solid $fit-green;
 }
 
 .table-today > td {
-  --bs-table-bg-state: #{rgba($text, .05)};
+  --bs-table-bg-state: #{$fit-green-40};
 }
 
-.text-bg-success { color: $black !important; }
+.text-bg-success { color: $fit-black !important; }
 
 // ---------- Links inside text ----------
 .link-underline-accent {
   font-weight: 700;
-  color: $text;
+  color: $fit-black;
   text-decoration: none;
-  border-bottom: 2px solid $orange;
+  border-bottom: 3px solid $fit-green;
 
-  &:hover { color: $text; }
+  &:hover { color: $fit-black; }
 }
 
 details summary {
@@ -136,26 +118,26 @@ details summary {
 // ---------- Chat ----------
 .chat-bubble-user {
   border-radius: 16px 16px 4px 16px;
-  background: $border;
-  color: $text;
+  background: $fit-black;
+  color: $fit-white;
 
-  a { color: $text; text-decoration: underline; }
+  a { color: $fit-green; }
 }
 
 // ---------- All plans ----------
 .plan-card {
-  color: $text;
+  color: $fit-black;
   transition: border-color .15s ease, transform .15s ease;
 
   &:hover {
-    color: $text;
-    border-color: $text-muted;
+    color: $fit-black;
+    border-color: $fit-black;
   }
 }
 
 .plan-card-arrow {
   font-size: 22px;
-  color: $text-muted;
+  color: rgba($fit-black, .3);
 }
 
 // ---------- Add to calendar modal ----------
@@ -179,20 +161,20 @@ details summary {
 
 // Highlight the cards that are ticked
 .plan-row:has(.plan-checkbox:checked) .plan-card {
-  border-color: $text;
-  background: $border;
+  border-color: $fit-black;
+  background: $fit-green-40;
 }
 
 .plan-progress {
   height: 6px;
   border-radius: 50rem;
-  background: $border;
+  background: rgba($fit-black, .08);
   overflow: hidden;
 
   div {
     height: 100%;
     border-radius: 50rem;
-    background: $lime;
+    background: $fit-green;
   }
 }
 
@@ -206,11 +188,9 @@ details summary {
 .plan-why {
   margin-bottom: 20px;
   padding: 16px 20px;
-  border: 1px solid $card-border;
   border-radius: 16px;
-  background: $surface;
-  box-shadow: $card-shadow;
-  color: $text;
+  background: $fit-black;
+  color: $fit-white;
 
   > summary {
     display: flex;
@@ -223,14 +203,14 @@ details summary {
     &::after {
       content: "+";
       margin-left: auto;
-      color: $text-muted;
+      color: $fit-green;
       font-size: 20px;
     }
   }
 
   &[open] > summary::after { content: "–"; }
 
-  strong { color: $text; }
+  strong { color: $fit-green; }
 }
 
 .plan-why-icon {
@@ -240,8 +220,8 @@ details summary {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: $border-strong;
-  color: $text;
+  background: $fit-green;
+  color: $fit-black;
   font-size: 13px;
   font-weight: 800;
   font-style: italic;
@@ -250,7 +230,7 @@ details summary {
 .plan-why-body {
   margin-top: 12px;
   font-size: 14px;
-  color: $text-muted;
+  color: rgba($fit-white, .85);
 
   p { margin-bottom: 8px; }
   ul { margin-bottom: 0; padding-left: 18px; }
@@ -269,14 +249,21 @@ details summary {
   form { margin: 0; }
 }
 
+.btn-neon {
+  background: $fit-green;
+  color: $fit-black;
+  font-weight: 700;
+
+  &:hover { background: $fit-green-40; color: $fit-black; }
+}
+
 // ---------- Weekly shopping list (click to open) ----------
 .shopping-list {
   margin-bottom: 20px;
   padding: 14px 20px;
-  border: 1px solid $card-border;
+  border: 2px solid $fit-black;
   border-radius: 16px;
-  background: $surface;
-  box-shadow: $card-shadow;
+  background: $fit-white;
 
   > summary {
     display: flex;
@@ -289,7 +276,6 @@ details summary {
     &::after {
       content: "+";
       margin-left: auto;
-      color: $text-muted;
       font-size: 20px;
     }
   }
@@ -306,8 +292,8 @@ details summary {
   height: 30px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: $border-strong;
-  color: $text;
+  background: $fit-green;
+  color: $fit-black;
   font-size: 14px;
 }
 
@@ -315,7 +301,7 @@ details summary {
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
 }
 
 .shopping-list-body { margin-top: 14px; }
@@ -326,7 +312,7 @@ details summary {
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
-  color: $text-muted;
+  color: rgba($fit-black, .5);
 }
 
 .shopping-list-items {
@@ -334,7 +320,7 @@ details summary {
   padding: 0;
   list-style: none;
 
-  li { border-bottom: 1px solid $border; }
+  li { border-bottom: 1px solid rgba($fit-black, .08); }
 
   label {
     display: flex;
@@ -347,7 +333,7 @@ details summary {
   .form-check-input { margin: 0; flex-shrink: 0; }
 
   // Ticked items are crossed out
-  label:has(input:checked) { color: $text-muted; text-decoration: line-through; }
+  label:has(input:checked) { color: rgba($fit-black, .4); text-decoration: line-through; }
 }
 
 .shopping-list-quantity {
@@ -360,15 +346,14 @@ details summary {
 .shopping-list-tip {
   display: block;
   font-size: 12px;
-  color: $text-muted;
+  color: rgba($fit-black, .5);
 }
 
 .shopping-list-pantry {
   margin: 16px 0 0;
   padding: 10px 14px;
   border-radius: 12px;
-  background: $border;
-  color: $text;
+  background: $fit-green-40;
   font-size: 14px;
 }
 
@@ -386,7 +371,7 @@ details summary {
 
   li {
     padding: 6px 0;
-    border-bottom: 1px solid $border;
+    border-bottom: 1px solid rgba($fit-black, .08);
 
     &:last-child { border-bottom: 0; }
   }
@@ -405,5 +390,5 @@ details summary {
 
 .exercises-tip {
   font-size: 12px;
-  color: $text-muted;
+  color: rgba($fit-black, .55);
 }
