@@ -1,32 +1,54 @@
+# Turns a coaching conversation into a saved plan: workouts, 2 weeks of meals that repeat, shopping lists, summary.
+#
+# To be fast, the AI calls that don't depend on each other run at the same time (see #call):
+#   1. own sessions (boxing...) + the menu (names of all dishes)           ~5 s
+#   2. workouts + week 1 meals + week 2 meals                               ~20 s
+#   3. only if needed: ingredients of meals that came back incomplete      ~5 s
+#   4. save, then shopping lists + summary                                  ~15 s
+# Only the AI calls run in threads: the database is used before and after them.
 class PlanGenerator
-  # The AI's answer was unusable twice (missing meals or calories): the user is asked to try again
+  # The AI's answer was unusable twice (missing meals or exercises): the user is asked to try again
   class Error < StandardError; end
+
+  # The steps shown to the user while the plan is made (see PlanGenerationJob)
+  STEPS = {
+    reading: "Reading your conversation",
+    cooking: "Planning your workouts and 2 weeks of meals",
+    saving: "Saving your plan",
+    finishing: "Writing your shopping lists and summary"
+  }.freeze
 
   WEEKS_IN_ROTATION = 2
   # Default training days (1 = first day of the plan), with rest days in between,
   # for users without regular sessions (the AI put them all at the start of the week)
   TRAINING_DAYS_SPREAD = {
     1 => [1], 2 => [1,
-4], 3 => [1, 3, 5], 4 => [1, 2, 4, 6], 5 => [1, 2, 4, 5, 6], 6 => [1, 2, 3, 4, 5, 6], 7 => (1..7).to_a
+                    4], 3 => [1, 3, 5], 4 => [1, 2, 4, 6], 5 => [1, 2, 4, 5, 6], 6 => [1, 2, 3, 4, 5, 6], 7 => (1..7).to_a
   }.freeze
   DEFAULT_MEALS_PER_DAY = 3
   DEFAULT_TRAINING_DAYS = 3
-  DAYS = (1..7).map { |day| "day_#{day}" }.freeze
   MAX_WEEK_INGREDIENTS = 35 # keeps the weekly shopping list short (pantry staples not counted)
   MIN_MAIN_INGREDIENTS = 4  # a lunch or dinner with fewer is missing ingredients (lasagna with only salmon and spinach)
   PANTRY_STAPLES = "oil, butter, salt, pepper, spices, dried herbs, garlic, flour, stock cubes, vinegar, soy sauce"
   CALORIE_MARGIN = 0.02     # a day within 2% of the calorie target is left as it is
   SCALE_LIMITS = (0.6..1.6) # portions are never scaled more than this
-  MIN_DIFFERENT_DISHES = 12 # of the 14 lunches and dinners of a week
-  MIN_PROTEIN_SHARE = 0.85  # of the protein target
+  BREAKFAST_OPTIONS = 3     # different breakfasts, rotating over the days (written once, placed by Ruby)
+  SNACK_OPTIONS = 2
+  # The meals of a day, by the user's meals per day
+  DAY_SLOTS = {
+    2 => %w[lunch dinner],
+    3 => %w[breakfast lunch dinner],
+    4 => %w[breakfast lunch snack dinner],
+    5 => %w[breakfast snack lunch snack dinner]
+  }.freeze
 
   # JSON schemas for the AI's structured output: the answer is always valid JSON in this shape
+  # (meal_type is set by Ruby from the meal's place in the day)
   MEAL_SCHEMA = {
     type: "object",
     additionalProperties: false,
-    required: %w[meal_type name description recipe calories protein_g carbs_g fat_g ingredients],
+    required: %w[name description recipe calories protein_g carbs_g fat_g ingredients],
     properties: {
-      meal_type: { type: "string", enum: Meal::MEAL_TYPES.keys },
       name: { type: "string" },
       description: { type: "string" },
       recipe: { type: "string" },
@@ -96,6 +118,19 @@ class PlanGenerator
     }
   }.freeze
 
+  # Names only: all the dishes of the 2 weeks, so both weeks can be written at the same time without repeats
+  MENU_PROMPT = <<~PROMPT
+    You choose the menu of a 2-week meal plan for a fitness app, following the plan the assistant
+    proposed in the conversation and the user's profile. Give only dish names (e.g. "Chickpea curry with rice").
+    - "breakfasts" and "snacks": simple options that repeat over the days.
+    - "week_1_dishes" and "week_2_dishes": 14 lunches and dinners each, all 28 DIFFERENT dishes and different
+      kinds of dishes (a curry, a pasta, a soup, wraps, a chili, a tray bake, an omelette, a stir-fry...),
+      at most 2 per week with the same base (pasta, rice, potatoes, bread...).
+    - Include the user's favourite meals (profile and conversation), each once or twice per week.
+    - Simple, everyday recipes with common, seasonal, affordable supermarket ingredients, reused across the week.
+    - Respect the user's diet, allergies, food dislikes and cooking time.
+  PROMPT
+
   OWN_SESSIONS_PROMPT = <<~PROMPT
     From the user's profile ("Regular sessions") and the coaching conversation, list the sessions the user
     does COMPLETELY ON THEIR OWN every week: a class, a sport, a match, a club training (e.g. boxing on Saturday,
@@ -105,33 +140,202 @@ class PlanGenerator
     Empty list if there are none.
   PROMPT
 
-  # plan: an existing plan to rebuild from the chat ("Update Plan #2"): same number and dates, new content
-  def initialize(chat, plan: nil)
+  # plan: an existing plan to rebuild from the chat ("Update Plan #2"): same number and dates, new content.
+  # progress: called with each step of STEPS as it starts, so the page can show it (see PlanGenerationJob)
+  def initialize(chat, plan: nil, progress: nil)
     @chat = chat
     @user = chat.user
     @plan = plan
+    @progress = progress || ->(_step) {}
   end
 
   def call
-    first_week  = ask_week(first_week_prompt, workouts: true)
-    @weekly_workout_minutes = first_week["workouts"].sum { |workout| workout["duration_min"].to_i }.nonzero?
-    first_week = fit_to_calorie_target(first_week) # again, now that the regular sessions (football...) are known
-    second_week = ask_week(second_week_prompt(first_week["meals"]), workouts: false)
-    meal_weeks  = [first_week["meals"], second_week["meals"]]
+    @progress.call(:reading)
+    @context = @user.coach_context # read once: every prompt uses it
+    @conversation = conversation
+    @own_sessions, @menu = parallel(-> { ask_own_sessions }, -> { ask_menu })
 
+    @progress.call(:cooking)
+    @workout_minutes = estimated_workout_minutes # for the calorie target in the meal prompts
+    prompts = [workouts_prompt, meals_prompt(1), meals_prompt(2)] # built here: they read the database
+    workouts, week1, week2 = parallel(-> { ask_workouts(prompts[0]) }, -> { ask_meals(1, prompts[1]) },
+                                        -> { ask_meals(2, prompts[2]) })
+    @workout_minutes = workouts.sum { |workout| workout["duration_min"].to_i }.nonzero? # the real ones
+    weeks = complete_ingredients([week1, week2]).map { |week| fit_to_calorie_target(week) }
+
+    @progress.call(:saving)
     plan = ActiveRecord::Base.transaction do
       plan = save_plan
-      create_workouts(plan, first_week["workouts"])
-      create_meals(plan, meal_weeks)
+      create_workouts(plan, workouts)
+      create_meals(plan, weeks)
       plan
     end
 
-    add_shopping_lists(plan)
-    add_summary(plan)
+    @progress.call(:finishing)
+    add_shopping_lists_and_summary(plan)
     plan
   end
 
   private
+
+  # Runs AI calls at the same time and returns their answers in the same order. An error in one is raised here.
+  # permit_concurrent_loads: the waiting thread lets the others load Rails classes (no deadlock in development)
+  def parallel(*calls)
+    threads = calls.map { |call| Thread.new { Rails.application.executor.wrap { call.call } } }
+    ActiveSupport::Dependencies.interlock.permit_concurrent_loads { threads.map(&:value) }
+  end
+
+  # ---------- 1. Own sessions and menu ----------
+
+  # [{ "weekday" => "Saturday", "name" => "Boxing", "duration_min" => 60 }] (see OWN_SESSIONS_PROMPT)
+  def ask_own_sessions
+    answer = RubyLLM.chat.with_instructions(OWN_SESSIONS_PROMPT).with_thinking(effort: :low)
+                    .with_schema(OWN_SESSIONS_SCHEMA).ask(question).parsed
+    Array(answer["own_sessions"]).first(training_days)
+  rescue RubyLLM::Error => e
+    Rails.logger.warn("[PlanGenerator] Own sessions failed, planning all training days: #{e.message}")
+    []
+  end
+
+  def ask_menu
+    RubyLLM.chat.with_instructions(MENU_PROMPT).with_thinking(effort: :low).with_schema(menu_schema).ask(question).parsed
+  end
+
+  def menu_schema
+    names = ->(count) { { type: "array", items: { type: "string" }, minItems: count, maxItems: count } }
+    properties = { breakfasts: names.call(breakfasts? ? BREAKFAST_OPTIONS : 0), snacks: names.call(snacks? ? SNACK_OPTIONS : 0),
+                   week_1_dishes: names.call(14), week_2_dishes: names.call(14) }
+    { name: "menu", strict: true,
+      schema: { type: "object", additionalProperties: false, required: properties.keys.map(&:to_s), properties: properties } }
+  end
+
+  def question
+    "#{@context}\n\nConversation:\n#{@conversation}"
+  end
+
+  def own_sessions
+    @own_sessions || []
+  end
+
+  # ---------- 2. Workouts and meals ----------
+
+  # The user's own sessions (boxing...) without exercises, then the workouts the app plans
+  def ask_workouts(prompt)
+    own = own_sessions.map do |session|
+      session.merge("description" => "Your regular weekly session: it's part of your plan, keep it up!",
+                    "exercises" => [], "regular" => true)
+    end
+    return place_workouts(own) if new_workouts_needed.zero?
+
+    2.times do
+      planned = Array(ask_ai(prompt, workouts_schema)["workouts"])
+      return place_workouts(own + planned) if planned.size >= new_workouts_needed &&
+                                              planned.all? { |workout| Array(workout["exercises"]).size >= 4 }
+
+      Rails.logger.warn("[PlanGenerator] Workouts without exercises, asking again")
+    end
+    raise Error, "The AI's workouts were unusable twice"
+  end
+
+  def workouts_schema
+    count = new_workouts_needed
+    { name: "workouts", strict: true,
+      schema: { type: "object", additionalProperties: false, required: %w[workouts],
+                properties: { workouts: { type: "array", items: WORKOUT_SCHEMA, minItems: count, maxItems: count } } } }
+  end
+
+  # One week of meals: week 1 also writes the breakfasts and snacks, which week 2 reuses.
+  # Asked again once if a day can't reach the calorie target.
+  def ask_meals(week, prompt)
+    2.times do
+      answer = ask_ai(prompt, meals_schema(week))
+      return answer if answer["lunches_and_dinners"].to_a.size == 14
+
+      Rails.logger.warn("[PlanGenerator] Week #{week} meals incomplete, asking again")
+    end
+    raise Error, "The AI's week #{week} of meals was unusable twice"
+  end
+
+  def meals_schema(week)
+    meals = ->(count) { { type: "array", items: MEAL_SCHEMA, minItems: count, maxItems: count } }
+    properties = { week_ingredients: { type: "array", items: { type: "string" }, maxItems: MAX_WEEK_INGREDIENTS } }
+    if week == 1
+      properties[:breakfasts] = meals.call(breakfasts? ? BREAKFAST_OPTIONS : 0)
+      properties[:snacks] = meals.call(snacks? ? SNACK_OPTIONS : 0)
+    end
+    properties[:lunches_and_dinners] = meals.call(14)
+    { name: "week_#{week}_meals", strict: true,
+      schema: { type: "object", additionalProperties: false, required: properties.keys.map(&:to_s), properties: properties } }
+  end
+
+  # effort: :low = the AI "thinks" less before answering; filling in a plan that is already agreed doesn't need much
+  def ask_ai(prompt, schema)
+    RubyLLM.chat.with_instructions(prompt).with_thinking(effort: :low).with_schema(schema).ask(@conversation).parsed
+  end
+
+  def breakfasts?
+    day_slots.include?("breakfast")
+  end
+
+  def snacks?
+    day_slots.include?("snack")
+  end
+
+  def day_slots
+    DAY_SLOTS.fetch(meals_per_day, DAY_SLOTS[DEFAULT_MEALS_PER_DAY])
+  end
+
+  # ---------- 3. From the AI's answers to days ----------
+
+  # [answer of week 1, answer of week 2] => [{ "meals" => [{ "day" => 1, "meal_type" => "breakfast", ... }] }, ...]
+  # Breakfasts and snacks (from week 1) rotate over the days; lunches and dinners come in order (day 1 lunch,
+  # day 1 dinner, day 2 lunch...). Each meal is its own copy, so scaling one day doesn't change another.
+  def build_weeks(answers)
+    breakfasts = Array(answers.first["breakfasts"])
+    snacks = Array(answers.first["snacks"])
+    answers.map do |answer|
+      mains = Array(answer["lunches_and_dinners"])
+      snack_index = -1
+      meals = (1..7).flat_map do |day|
+        day_slots.map do |slot|
+          meal = case slot
+                 when "breakfast" then breakfasts[(day - 1) % breakfasts.size] if breakfasts.any?
+                 when "snack" then snacks[(snack_index += 1) % snacks.size] if snacks.any?
+                 else mains[((day - 1) * 2) + (slot == "dinner" ? 1 : 0)]
+                 end
+          meal&.deep_dup&.merge("day" => day, "meal_type" => slot)
+        end
+      end
+      { "meals" => meals.compact }
+    end
+  end
+
+  # Meals the AI wrote with too few ingredients (a lasagna with only salmon and spinach) are completed in one
+  # small call, instead of asking for whole weeks again
+  def complete_ingredients(answers)
+    weeks = build_weeks(answers)
+    incomplete = weeks.flat_map { |week| week["meals"] }.select { |meal| missing_ingredients?(meal) }
+                      .uniq { |meal| meal["name"] }
+    return weeks if incomplete.empty?
+
+    lists = MealIngredients.ingredients_for(incomplete).zip(incomplete).to_h { |list, meal| [meal["name"], list] }
+    weeks.each do |week|
+      week["meals"].each do |meal|
+        list = lists[meal["name"]]
+        meal["ingredients"] = list if list.present? && list.size > Array(meal["ingredients"]).size
+      end
+    end
+  rescue RubyLLM::Error => e
+    Rails.logger.warn("[PlanGenerator] Completing ingredients failed: #{e.message}")
+    weeks
+  end
+
+  def missing_ingredients?(meal)
+    minimum = %w[lunch dinner].include?(meal["meal_type"]) ? MIN_MAIN_INGREDIENTS : 2
+    Array(meal["ingredients"]).size < minimum
+  end
+
+  # ---------- 4. Saving ----------
 
   # A new plan (it copies the user's goals, see Plan), or the plan being updated, emptied first
   def save_plan
@@ -143,18 +347,23 @@ class PlanGenerator
     @plan
   end
 
-  # "Why this plan" text; the plan is still saved if this fails (it can be generated later)
-  def add_summary(plan)
-    PlanSummary.new(plan, conversation: conversation).call
+  # Shopping lists and the "Why this plan" summary at the same time. The plan is saved even if they fail:
+  # the plan page has buttons to make them later.
+  def add_shopping_lists_and_summary(plan)
+    summary = PlanSummary.new(plan, conversation: @conversation)
+    question = summary.question
+    summary_thread = Thread.new { Rails.application.executor.wrap { PlanSummary.ask(question) } }
+
+    begin
+      ShoppingListWriter.new(plan).call
+    rescue RubyLLM::Error, JSON::ParserError, ActiveRecord::RecordInvalid => e
+      Rails.logger.warn("[PlanGenerator] Shopping lists failed: #{e.class}: #{e.message}")
+    end
+
+    text = ActiveSupport::Dependencies.interlock.permit_concurrent_loads { summary_thread.value }
+    summary.save(text)
   rescue RubyLLM::Error, ActiveRecord::RecordInvalid => e
     Rails.logger.warn("[PlanGenerator] Plan summary failed: #{e.class}: #{e.message}")
-  end
-
-  # Weekly shopping lists; the plan is still saved if this fails (there is a button to make them later)
-  def add_shopping_lists(plan)
-    ShoppingListWriter.new(plan).call
-  rescue RubyLLM::Error, JSON::ParserError, ActiveRecord::RecordInvalid => e
-    Rails.logger.warn("[PlanGenerator] Shopping lists failed: #{e.class}: #{e.message}")
   end
 
   # An updated plan keeps its dates, so it stays the same month (and "Plan #2")
@@ -190,9 +399,9 @@ class PlanGenerator
     end
   end
 
-  def create_meals(plan, meal_weeks)
+  def create_meals(plan, weeks)
     each_week do |week_start, index|
-      Array(meal_weeks[index % WEEKS_IN_ROTATION]).each do |meal|
+      Array(weeks[index % WEEKS_IN_ROTATION]["meals"]).each do |meal|
         date = week_start + (meal["day"].to_i - 1).days
         next if date > end_date
 
@@ -204,64 +413,52 @@ class PlanGenerator
     end
   end
 
-  # One week of meals (and workouts). The schema forces all 7 days into the answer;
-  # if a day still has too few meals, the AI is asked once more.
-  # Asks up to twice: keeps the first good week, else the first usable one, else gives up (Error)
-  def ask_week(prompt, workouts:)
-    attempts = []
-    2.times do
-      week = parse_week(ask(prompt, workouts: workouts))
-      next unless usable?(week) && (!workouts || enough_workouts?(week))
+  # ---------- Calories ----------
 
-      place_workouts(week)
-      fit_to_calorie_target(week)
-      return week if good?(week)
-
-      attempts << week
-      Rails.logger.warn("[PlanGenerator] Week not varied enough, missing ingredients or too little protein, asking again")
-    end
-    attempts.first || raise(Error, "The AI's week of meals was unusable twice")
-  end
-
-  # After scaling: varied lunches and dinners with all their ingredients, and enough protein
-  # (the AI sometimes alternated the same 2 dishes all week, or left out the milk, onions, pasta...)
-  def good?(week)
-    dishes = week["meals"].select { |meal| %w[lunch dinner].include?(meal["meal_type"]) }
-    protein_per_day = week["meals"].sum { |meal| meal["protein_g"].to_i } / 7.0
-    dishes.map { |meal| meal["name"].to_s.downcase.strip }.uniq.size >= MIN_DIFFERENT_DISHES &&
-      dishes.all? { |meal| Array(meal["ingredients"]).size >= MIN_MAIN_INGREDIENTS } &&
-      (targets.protein_g.nil? || protein_per_day >= targets.protein_g * MIN_PROTEIN_SHARE)
-  end
-
-  # Every day has its meals, and its calories are close enough to the target to be scaled
-  def usable?(week)
-    meals_by_day = week["meals"].group_by { |meal| meal["day"] }
-    target = targets.calories
-    (1..7).all? do |day|
-      meals = meals_by_day[day].to_a
-      total = meals.sum { |meal| meal["calories"].to_i }
-      meals.size >= meals_per_day && total.positive? && (target.nil? || SCALE_LIMITS.cover?(target.to_f / total))
-    end
-  end
-
-  # Every planned workout has its circuit, and together with the own sessions they fill the training days
-  def enough_workouts?(week)
-    planned = week["workouts"].reject { |workout| workout["regular"] }
-    planned.size >= new_workouts_needed && planned.all? { |workout| Array(workout["exercises"]).size >= 4 }
-  end
-
-  # Calorie and protein targets; the workouts count once week 1 is known (see #call)
+  # Calorie and protein targets, counting the week's workouts (incl. boxing...)
   def targets
-    @user.nutrition_targets(weekly_workout_minutes: @weekly_workout_minutes)
+    @user.nutrition_targets(weekly_workout_minutes: @workout_minutes)
   end
+
+  # Before the workouts are written: the own sessions + the planned ones at the profile's session length
+  def estimated_workout_minutes
+    own = own_sessions.sum { |session| session["duration_min"].to_i }
+    (own + (new_workouts_needed * (@user.session_minutes || 45))).nonzero?
+  end
+
+  # The AI's days are often too small or too big (it planned ~1,350 kcal for someone needing ~1,700).
+  # Each day's portions are scaled to the calculated target: calories, macros and ingredient amounts.
+  def fit_to_calorie_target(week)
+    target = targets.calories
+    return week if target.nil?
+
+    week["meals"].group_by { |meal| meal["day"] }.each_value do |day_meals|
+      total = day_meals.sum { |meal| meal["calories"].to_i }
+      next if total.zero? || (total - target).abs <= target * CALORIE_MARGIN
+
+      factor = (target.to_f / total).clamp(SCALE_LIMITS)
+      day_meals.each { |meal| scale_meal(meal, factor) }
+    end
+    week
+  end
+
+  def scale_meal(meal, factor)
+    %w[calories protein_g carbs_g fat_g].each { |key| meal[key] = (meal[key].to_i * factor).round }
+    Array(meal["ingredients"]).each do |ingredient|
+      ingredient["quantity"] = (ingredient["quantity"] * factor).round(1) if ingredient["quantity"].is_a?(Numeric)
+    end
+  end
+
+  # ---------- Workout days ----------
 
   # "Tuesday" => the plan's day number of that weekday (day 1 is the start date)
-  def place_workouts(week)
-    spread_new_workouts(week["workouts"])
-    week["workouts"].each do |workout|
+  def place_workouts(workouts)
+    spread_new_workouts(workouts)
+    workouts.each do |workout|
       weekday = Date::DAYNAMES.index(workout["weekday"]) || start_date.wday
       workout["day"] = ((weekday - start_date.wday) % 7) + 1
     end
+    workouts
   end
 
   # The AI put a new workout on Friday, right before Saturday boxing: a new workout next to another session
@@ -299,77 +496,7 @@ class PlanGenerator
     TRAINING_DAYS_SPREAD.fetch(training_days, [1]).map { |day| (start_date + (day - 1)).strftime("%A") }.to_sentence
   end
 
-  # The AI's days are often too small or too big (it planned ~1,350 kcal for someone needing ~1,700).
-  # Each day's portions are scaled to the calculated target: calories, macros and ingredient amounts.
-  def fit_to_calorie_target(week)
-    target = targets.calories
-    return week if target.nil?
-
-    week["meals"].group_by { |meal| meal["day"] }.each_value do |day_meals|
-      total = day_meals.sum { |meal| meal["calories"].to_i }
-      next if total.zero? || (total - target).abs <= target * CALORIE_MARGIN
-
-      factor = (target.to_f / total).clamp(SCALE_LIMITS)
-      day_meals.each { |meal| scale_meal(meal, factor) }
-    end
-    week
-  end
-
-  def scale_meal(meal, factor)
-    %w[calories protein_g carbs_g fat_g].each { |key| meal[key] = (meal[key].to_i * factor).round }
-    Array(meal["ingredients"]).each do |ingredient|
-      ingredient["quantity"] = (ingredient["quantity"] * factor).round(1) if ingredient["quantity"].is_a?(Numeric)
-    end
-  end
-
-  # effort: :low = the AI "thinks" less before answering. Saving a plan was ~4 minutes,
-  # mostly hidden thinking; filling in a plan that is already agreed doesn't need much.
-  def ask(prompt, workouts:)
-    RubyLLM.chat.with_instructions(prompt).with_thinking(effort: :low)
-           .with_schema(week_schema(workouts: workouts)).ask(conversation).parsed
-  end
-
-  def week_schema(workouts:)
-    meals_of_a_day = { type: "array", items: MEAL_SCHEMA, minItems: meals_per_day, maxItems: meals_per_day }
-    properties = {}
-    if workouts
-      # Exactly the workouts the app plans: the training days minus the user's own sessions (boxing...)
-      count = new_workouts_needed
-      properties[:workouts] = { type: "array", items: WORKOUT_SCHEMA, minItems: count, maxItems: count }
-    end
-    # Before the meals, so the AI plans a short shopping list and varied dishes first
-    properties[:week_ingredients] = { type: "array", items: { type: "string" }, maxItems: MAX_WEEK_INGREDIENTS }
-    properties[:lunch_and_dinner_dishes] = { type: "array", items: { type: "string" }, minItems: 14, maxItems: 14 }
-    properties[:days] = {
-      type: "object",
-      additionalProperties: false,
-      required: DAYS,
-      properties: DAYS.to_h { |day| [day, meals_of_a_day] }
-    }
-
-    {
-      name: "week_plan",
-      strict: true,
-      schema: { type: "object", additionalProperties: false, required: properties.keys.map(&:to_s),
-properties: properties }
-    }
-  end
-
-  # { "days" => { "day_1" => [meals], ... } } => { "workouts" => [...], "meals" => [{ "day" => 1, ... }] }
-  # The user's regular sessions (football, yoga...) become workouts of the plan too
-  def parse_week(answer)
-    meals = DAYS.each_with_index.flat_map do |day, index|
-      Array(answer.dig("days", day)).map { |meal| meal.merge("day" => index + 1) }
-    end
-    return { "workouts" => [], "meals" => meals } unless answer.key?("workouts") # week 2: meals only
-
-    # The user's own sessions (boxing...) are part of the plan too, without exercises
-    own = own_sessions.map do |session|
-      session.merge("description" => "Your regular weekly session: it's part of your plan, keep it up!",
-                    "exercises" => [], "regular" => true)
-    end
-    { "workouts" => own + Array(answer["workouts"]), "meals" => meals }
-  end
+  # ---------- Profile ----------
 
   def conversation
     @chat.messages
@@ -392,86 +519,15 @@ properties: properties }
     [training_days - own_sessions.size, 0].max
   end
 
-  # [{ "weekday" => "Saturday", "name" => "Boxing", "duration_min" => 60 }], asked once (see OWN_SESSIONS_PROMPT)
-  def own_sessions
-    @own_sessions ||= begin
-      question = "#{@user.coach_context}\n\nConversation:\n#{conversation}"
-      answer = RubyLLM.chat.with_instructions(OWN_SESSIONS_PROMPT).with_thinking(effort: :low)
-                      .with_schema(OWN_SESSIONS_SCHEMA).ask(question).parsed
-      Array(answer["own_sessions"]).first(training_days)
-    rescue RubyLLM::Error => e
-      Rails.logger.warn("[PlanGenerator] Own sessions failed, planning all training days: #{e.message}")
-      []
-    end
-  end
+  # ---------- Prompts ----------
 
-  # The most important rules come first: with low thinking effort the AI follows the top of the list best
-  def meal_rules
-    <<~RULES
-      Most important:
-      - #{targets.to_prompt.gsub("\n", "\n  ")}
-        Every day must add up to the calorie target (portions for one person).
-      - #{@user.seasonal_food_rule(start_date, end_date)}
-      #{budget_rule}
-      - Simple, everyday food: standard, well-known recipes that are easy to cook (e.g. omelette,
-        overnight oats, chili, stir-fry, pasta with sauce, tray bake, soup, wraps, curry with rice).
-        Only common supermarket ingredients: no niche grains or specialty products (e.g. no farro,
-        freekeh, teff, amaranth, tahini, miso).
-      - Short shopping list: at most #{MAX_WEEK_INGREDIENTS} different ingredients in the whole week (not counting
-        pantry staples: #{PANTRY_STAPLES}). Reuse the same ingredients in several meals (e.g. one bag of spinach
-        for an omelette, a pasta and a curry; one pack of chicken for two dinners; milk for the oats and a béchamel).
-        Never leave out an ingredient a dish needs to stay under this limit: choose simpler dishes instead.
-      - Time-saving forms are welcome: frozen berries, frozen vegetable mixes, canned beans and tomatoes,
-        pre-washed salad, microwave rice pouches.
-      - Respect the user's diet, allergies, food dislikes and cooking time. Include the favourite meals
-        from the user's profile and the dishes and foods the user said in the conversation they like or
-        usually cook (fitted to the calorie target), each favourite once or twice a week, not every day.
-      - Vary the base: at most 2 lunches or dinners per week with the same base (pasta, rice, potatoes,
-        bread, quinoa...).
-
-      Structure:
-      - Every day has exactly #{meals_per_day} meals.
-      - Lunches and dinners are all different kinds of dishes (e.g. a curry, a pasta, a soup, wraps, a chili,
-        a tray bake, an omelette, a stir-fry): not the same bowl or salad again with small changes.
-        Use at most 3 different breakfasts and 2 different snacks in the week, repeated on several days.
-      - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(', ')}.
-      - Descriptions are one sentence. Recipes are 3 to 5 short steps that name each ingredient with its amount
-        (e.g. "Fry 1 chopped onion and 1 garlic clove in 1 tsp oil, add 1 tbsp curry paste and 200 g canned
-        tomatoes...") and explain any sauce (e.g. béchamel: melt 10 g butter, stir in 10 g flour, whisk in 150 ml milk).
-
-      #{Meal::INGREDIENT_RULES}
-    RULES
-  end
-
-  def budget_rule
-    return "- Keep the meals affordable, using cheap everyday staples." if @user.weekly_food_budget.nil?
-
-    "- Budget: all the meals of the week together must cost at most #{@user.weekly_food_budget} " \
-      "#{@user.currency} in groceries, at realistic local prices."
-  end
-
-  def answer_format
-    <<~FORMAT
-      Answer format:
-      - First "week_ingredients": the at most #{MAX_WEEK_INGREDIENTS} ingredients you will cook with this week
-        (not counting pantry staples), seasonal for the user's country (see the rules above), with everything
-        the dishes need (milk, onions, the pasta or lasagna sheets...). Then use only these and pantry staples
-        in the meals, and list every one a meal uses in its "ingredients".
-      - Then "lunch_and_dinner_dishes": the 14 lunches and dinners of the week, 14 DIFFERENT dishes
-        (each favourite of the user at most twice, at most 2 with the same base like pasta or rice).
-      - Then "days" has day_1 to day_7 (day_1 is the first day of the plan). Each day has
-        exactly #{meals_per_day} meals: breakfast, lunch and dinner#{', plus snacks' if meals_per_day > 3},
-        using the dishes listed above, each once. Every day reaches the protein target.
-    FORMAT
-  end
-
-  def first_week_prompt
+  def workouts_prompt
     <<~PROMPT
-      You convert a coaching conversation into a structured weekly plan.
+      You convert a coaching conversation into the user's weekly workouts.
       Use the LAST plan the assistant proposed in the conversation and the user profile below.
       The week starts on #{start_date.strftime('%A')}.
 
-      #{@user.coach_context}
+      #{@context}
 
       Workout rules:
       - The user trains #{training_days} days per week IN TOTAL. #{own_sessions_rule}
@@ -485,7 +541,8 @@ properties: properties }
         Never replace it with another kind of session (no HIIT instead of the run).
       - Spread the sessions over the week: at least one rest day between two sessions when possible
         (e.g. boxing on Saturday + 1 new workout => Tuesday or Wednesday, not Friday or Sunday).
-      - New workouts follow the plan proposed in the conversation and respect the user's session length, equipment, training location, injuries and exercise dislikes.
+      - New workouts follow the plan proposed in the conversation and respect the user's session length,
+        equipment, training location, injuries and exercise dislikes.
       - Each new workout is a circuit: "warm_up" (done once, e.g. "5 min brisk walk + arm circles"),
         then "cardio" if the session has any (e.g. "20 min easy run"; "" otherwise), then "rounds" of ALL
         "exercises" one after the other, with "round_rest_sec" rest after each round,
@@ -493,35 +550,72 @@ properties: properties }
         each with reps or time per round and one short technique tip.
         Match the user's fitness level (beginner: 2-3 rounds, simple moves; intermediate: 3-4 rounds),
         goals (strength: 6-10 reps; muscle: 8-12; endurance: 15+ or 30-45 sec) and session length.
-      - Each workout is shown to the user: "name" is a short title without the word "new" or a weekday (e.g. "Run + full body strength"),
-        "description" one sentence about its focus (e.g. "Legs and back, with a short core finisher").
+      - Each workout is shown to the user: "name" is a short title without the word "new" or a weekday
+        (e.g. "Run + full body strength"), "description" one sentence about its focus
+        (e.g. "Legs and back, with a short core finisher").
         Exercise "name" is only the exercise (e.g. "Goblet squat"): the reps go in their own field.
-
-      Meal rules:
-      #{meal_rules}
-      #{answer_format}
     PROMPT
   end
 
-  def second_week_prompt(first_week_meals)
-    used_meals = Array(first_week_meals).select { |meal| %w[lunch dinner].include?(meal["meal_type"]) }
-                                        .map { |meal| meal["name"] }.join(", ")
-    used_ingredients = Array(first_week_meals).flat_map { |meal| Array(meal["ingredients"]) }
-                                              .filter_map { |ingredient| ingredient["name"] if ingredient.is_a?(Hash) }
-                                              .uniq.join(", ")
+  def meals_prompt(week)
+    dishes = Array(@menu["week_#{week}_dishes"])
+    breakfast_rule = if week == 1 && breakfasts?
+                       "- \"breakfasts\": these #{BREAKFAST_OPTIONS} breakfasts, each written once (they rotate over " \
+                         "the days): #{Array(@menu['breakfasts']).join(', ')}."
+                     end
+    snack_rule = if week == 1 && snacks?
+                   "- \"snacks\": these #{SNACK_OPTIONS} snacks, each written once: #{Array(@menu['snacks']).join(', ')}."
+                 end
 
     <<~PROMPT
-      You create the SECOND week of meals for an existing nutrition plan.
-      Follow the plan the assistant proposed in the conversation and the user profile below.
+      You write week #{week} of the meal plan agreed in the conversation, for the user profile below.
 
-      #{@user.coach_context}
+      #{@context}
 
       Meal rules:
       #{meal_rules}
-      - Do NOT repeat any of these lunches or dinners from the first week: #{used_meals}
-      - Mostly reuse these first-week ingredients, so the shopping stays short and familiar: #{used_ingredients}
 
-      #{answer_format}
+      Answer format:
+      - First "week_ingredients": the at most #{MAX_WEEK_INGREDIENTS} ingredients you will cook with this week
+        (not counting pantry staples), seasonal for the user's country, with everything the dishes need
+        (milk, onions, the pasta or lasagna sheets...). Then list every one a meal uses in its "ingredients".
+      #{breakfast_rule}
+      #{snack_rule}
+      - "lunches_and_dinners": exactly these 14 dishes, in this order (day 1 lunch, day 1 dinner, day 2 lunch,
+        day 2 dinner...): #{dishes.each_with_index.map { |dish, index| "#{index + 1}. #{dish}" }.join('; ')}.
+      - Each day (#{day_slots.join(', ')}) adds up to the calorie target and reaches the protein target.
     PROMPT
+  end
+
+  # The most important rules come first: with low thinking effort the AI follows the top of the list best
+  def meal_rules
+    <<~RULES
+      Most important:
+      - #{targets.to_prompt.gsub("\n", "\n  ")}
+        Every day must add up to the calorie target (portions for one person).
+      - #{@user.seasonal_food_rule(start_date, end_date)}
+      #{budget_rule}
+      - Simple, everyday food with only common supermarket ingredients: no niche grains or specialty products
+        (e.g. no farro, freekeh, teff, amaranth, tahini, miso).
+      - Short shopping list: at most #{MAX_WEEK_INGREDIENTS} different ingredients in the whole week (not counting
+        pantry staples: #{PANTRY_STAPLES}). Reuse the same ingredients in several meals (e.g. one bag of spinach
+        for an omelette, a pasta and a curry; one pack of chicken for two dinners; milk for the oats and a béchamel).
+        Never leave out an ingredient a dish needs to stay under this limit.
+      - Time-saving forms are welcome: frozen berries, frozen vegetable mixes, canned beans and tomatoes,
+        pre-washed salad, microwave rice pouches.
+      - Respect the user's diet, allergies, food dislikes and cooking time.
+      - Descriptions are one sentence. Recipes are 3 to 5 short steps that name each ingredient with its amount
+        (e.g. "Fry 1 chopped onion and 1 garlic clove in 1 tsp oil, add 1 tbsp curry paste and 200 g canned
+        tomatoes...") and explain any sauce (e.g. béchamel: melt 10 g butter, stir in 10 g flour, whisk in 150 ml milk).
+
+      #{Meal::INGREDIENT_RULES}
+    RULES
+  end
+
+  def budget_rule
+    return "- Keep the meals affordable, using cheap everyday staples." if @user.weekly_food_budget.nil?
+
+    "- Budget: all the meals of the week together must cost at most #{@user.weekly_food_budget} " \
+      "#{@user.currency} in groceries, at realistic local prices."
   end
 end

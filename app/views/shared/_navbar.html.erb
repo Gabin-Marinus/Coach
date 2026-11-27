@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-md navbar-dark navbar-coach">
+<nav class="navbar navbar-expand-md navbar-dark navbar-coach sticky-top">
   <%= link_to root_path, class: "navbar-brand" do %>
     <span class="navbar-logo"></span> Coach
   <% end %>
@@ -10,7 +10,8 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarCoach">
-      <div class="navbar-nav me-auto ms-md-4 gap-1">
+      <%# On phones these links are in the tab bar at the bottom (shared/_tabbar) %>
+      <div class="navbar-nav me-auto ms-md-4 gap-1 d-none d-md-flex">
         <%= link_to "Today", root_path, class: "nav-link #{'active' if current_page?(root_path)}" %>
         <%= link_to "My plan", plan_profile_path,
                     class: "nav-link #{'active' if controller_name == 'profiles' && %w[plan workouts meals].include?(action_name) && params[:plan_id].blank?}" %>

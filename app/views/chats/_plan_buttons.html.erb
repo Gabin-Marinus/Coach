@@ -1,0 +1,14 @@
+<%# "Save my plan", or in the chat that made the current plan: "Update Plan #2" / "Save as a new plan" %>
+<div class="d-flex flex-wrap justify-content-center gap-2">
+  <% if (plan = chat.plan_to_update) %>
+    <%= button_to "Update #{plan.title}", chat_plans_path(chat), params: { update: true },
+                  class: "btn btn-success btn-lg",
+                  data: { turbo_confirm: "Update #{plan.title} with the changes from this chat? Its workouts and meals " \
+                                         "are rebuilt, and what you marked as done or skipped is reset." } %>
+    <%= button_to "Save as a new plan", chat_plans_path(chat), class: "btn btn-outline-secondary btn-lg",
+                  data: { turbo_confirm: "Save as a new plan? #{plan.title} will be archived." } %>
+  <% else %>
+    <%= button_to "Save my plan", chat_plans_path(chat), class: "btn btn-success btn-lg",
+                  data: { turbo_confirm: "Save my plan? Your current plan will be archived." } %>
+  <% end %>
+</div>

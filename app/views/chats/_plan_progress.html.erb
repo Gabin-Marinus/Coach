@@ -1,0 +1,29 @@
+<%# Live progress while the plan is made (PlanGenerationJob). Keeps the id "plan_actions" so it replaces the buttons. %>
+<% plan = local_assigns[:plan] %>
+<div id="plan_actions">
+  <div class="plan-saving card p-3 my-3">
+    <% if step == :failed %>
+      <p class="fw-semibold mb-2">Sorry, we couldn't save your plan. 😕</p>
+      <p class="small text-muted mb-3">The AI's answer was incomplete. Please try again: it usually works the second time.</p>
+      <%= render "chats/plan_buttons", chat: chat %>
+    <% elsif step == :done %>
+      <%# Opens the plan by itself after 1.5 s (redirect_controller.js) %>
+      <div data-controller="redirect" data-redirect-url-value="<%= workouts_profile_path %>">
+        <p class="fw-semibold mb-1"><%= plan.title %> <%= local_assigns[:updated] ? "was updated" : "is ready" %>! 🎉</p>
+        <p class="small text-muted mb-3">Opening your plan…</p>
+        <%= link_to "See my plan", workouts_profile_path, class: "btn btn-success" %>
+      </div>
+    <% else %>
+      <% current = PlanGenerator::STEPS.keys.index(step) %>
+      <p class="fw-semibold mb-2">Making your plan… <span class="small text-muted fw-normal">(about a minute, you can leave this page)</span></p>
+      <ul class="plan-saving-steps list-unstyled mb-0">
+        <% PlanGenerator::STEPS.each_with_index do |(key, label), index| %>
+          <li class="<%= index < current ? 'is-done' : (index == current ? 'is-active' : 'is-waiting') %>">
+            <span class="plan-saving-icon"><%= index < current ? "✓" : (index == current ? "⏳" : "·") %></span>
+            <%= label %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<%# Bottom tab bar on phones only (hidden from "md" up, where the top menu shows the same links) %>
+<% plan_page = controller_name == "profiles" && %w[plan workouts meals].include?(action_name) && params[:plan_id].blank? %>
+<% plans_page = controller_name == "profiles" && (action_name == "plans" || params[:plan_id].present?) %>
+<% profile_page = controller_name == "profiles" && %w[show edit update].include?(action_name) %>
+<nav class="tabbar d-md-none" aria-label="Main">
+  <%= link_to root_path, class: "tabbar-item #{'is-active' if current_page?(root_path)}" do %>
+    <i class="fa-solid fa-house"></i><span>Today</span>
+  <% end %>
+  <%= link_to plan_profile_path, class: "tabbar-item #{'is-active' if plan_page}" do %>
+    <i class="fa-solid fa-calendar-week"></i><span>My plan</span>
+  <% end %>
+  <%= button_to chats_path, method: :post, class: "tabbar-item tabbar-new #{'is-active' if controller_name == 'chats'}",
+                form: { class: "tabbar-form" }, aria: { label: "New plan" } do %>
+    <i class="fa-solid fa-plus"></i><span>New plan</span>
+  <% end %>
+  <%= link_to plans_profile_path, class: "tabbar-item #{'is-active' if plans_page}" do %>
+    <i class="fa-solid fa-layer-group"></i><span>Plans</span>
+  <% end %>
+  <%= link_to profile_path, class: "tabbar-item #{'is-active' if profile_page}" do %>
+    <i class="fa-solid fa-user"></i><span>Profile</span>
+  <% end %>
+</nav>

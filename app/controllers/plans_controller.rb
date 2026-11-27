@@ -7,13 +7,15 @@ class PlansController < ApplicationController
       return
     end
 
-    # "Update Plan #2" rebuilds the plan this chat made; "Save my plan" makes a new one
+    # "Update Plan #2" rebuilds the plan this chat made; "Save my plan" makes a new one.
+    # Made in the background (~1 minute): the chat shows the progress live, then a "See my plan" button.
     plan = @chat.plan_to_update if params[:update] == "true"
-    PlanGenerator.new(@chat, plan: plan).call
-    notice = plan ? "#{plan.title} was updated! 🎉" : "Your 1-month plan was saved! 🎉"
-    redirect_to workouts_profile_path, notice: notice
-  rescue JSON::ParserError, ActiveRecord::RecordInvalid, RubyLLM::Error, PlanGenerator::Error
-    redirect_to chat_path(@chat), alert: "Sorry, we couldn't save your plan. Please try again."
+    PlanGenerationJob.perform_later(@chat, plan)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to chat_path(@chat), notice: "Your plan is being made. It takes about a minute." }
+    end
   end
 
   # "Explain this plan" button, for plans saved before summaries existed

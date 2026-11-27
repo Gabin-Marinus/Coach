@@ -15,6 +15,8 @@ class ShoppingListWriter
     /avocado|banana/ => "pick ripe ones"
   }.freeze
 
+  MIN_COVERAGE = 0.6 # an answer listing fewer than 60% of the week's ingredients is incomplete
+
   PROMPT = <<~PROMPT
     You turn the ingredient totals of one week of meals into a short, practical supermarket
     shopping list for one person. It must be easy to use in the shop and not overwhelming.
@@ -68,20 +70,26 @@ class ShoppingListWriter
   end
 
   def call
+    # A week with one meal without ingredients used to get no list at all: those meals are completed first
+    MealIngredients.new(@plan, @plan.meals.where(date: rotation_dates).without_ingredients).call
+
     weeks = (1..PlanGenerator::WEEKS_IN_ROTATION).to_h { |week| [week.to_s, week_meals(week)] }.compact
     questions = weeks.transform_values { |meals| question(meals) }
 
     # Both weeks at the same time, so saving a plan isn't twice as slow.
     # Only the AI calls run in threads: the database is used before and after.
-    answers = questions.to_h { |week, question| [week, Thread.new { ask(question) }] }
+    answers = questions.to_h { |week, question| [week, Thread.new { complete_answer(question, weeks[week]) }] }
                        .transform_values(&:value)
-                       .compact # a week that failed is left out: the "Create shopping list" button can retry
 
     lists = answers.to_h { |week, answer| [week, clean(answer, weeks[week])] }
     @plan.update!(shopping_lists: @plan.shopping_lists.merge(lists))
   end
 
   private
+
+  def rotation_dates
+    @plan.start_date...(@plan.start_date + PlanGenerator::WEEKS_IN_ROTATION.weeks)
+  end
 
   # nil when the week's meals have no ingredients yet (see MealIngredients)
   def week_meals(week)
@@ -94,15 +102,47 @@ class ShoppingListWriter
     "Country: #{country}\n\nIngredient totals for the week:\n#{totals(meals).join("\n")}"
   end
 
-  # "- rolled oats: 420 g (Bread & grains)"; "tomato" and "tomatoes" are added together
+  # "- rolled oats: 420 g (Bread & grains)"
   def totals(meals)
-    grouped = meals.flat_map(&:ingredients).group_by { |ingredient|
- [ingredient["name"].singularize, ingredient["unit"]] }
+    grouped_totals(meals).map { |total| "- #{total[:name]}: #{total[:amount]} (#{total[:category]})" }
+  end
+
+  # [{ name: "rolled oats", amount: "420 g", category: "Bread & grains" }]; "tomato" and "tomatoes" are added together
+  def grouped_totals(meals)
+    grouped = meals.flat_map(&:ingredients).group_by { |ingredient| [ingredient["name"].singularize, ingredient["unit"]] }
     grouped.map do |(_, unit), ingredients|
       quantity = ingredients.filter_map { |ingredient| ingredient["quantity"] }.sum
       amount = quantity.positive? ? "#{quantity.round} #{unit}".strip : "to taste"
-      "- #{ingredients.first['name']}: #{amount} (#{ingredients.first['category']})"
+      { name: ingredients.first["name"], amount: amount, category: ingredients.first["category"] }
     end
+  end
+
+  # The AI sometimes answered with an empty or half list (0 items for week 1): asked again once, and if it is
+  # still incomplete, the list is made from the ingredient totals, so there is always a full list.
+  def complete_answer(question, meals)
+    2.times do
+      answer = ask(question)
+      return answer if complete?(answer, meals)
+
+      Rails.logger.warn("[ShoppingListWriter] Incomplete list (#{Array(answer&.dig('items')).size} items), asking again")
+    end
+    list_from_totals(meals)
+  end
+
+  # Merging similar items makes the list shorter than the totals, but not this much shorter
+  def complete?(answer, meals)
+    return false if answer.nil?
+
+    listed = Array(answer["items"]).size + Array(answer["pantry"]).size
+    listed >= grouped_totals(meals).size * MIN_COVERAGE
+  end
+
+  # Plain list without the AI: "Rolled oats – 420 g"
+  def list_from_totals(meals)
+    items = grouped_totals(meals).map do |total|
+      { "name" => total[:name].capitalize, "buy" => total[:amount], "category" => total[:category] }
+    end
+    { "items" => items, "pantry" => [] }
   end
 
   # nil if the AI is unavailable, so one failed week doesn't lose the other
