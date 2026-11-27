@@ -1,0 +1,55 @@
+// Black navbar: lime logo, lime active link
+.navbar-coach {
+  padding: 12px 24px;
+  border-bottom: 2px solid $lime; // neon lime line under the navbar
+  background: $black;
+
+  .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: $text;
+  }
+
+  .navbar-logo {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: $lime;
+  }
+
+  .navbar-toggler {
+    border-color: $border-strong;
+  }
+
+  .nav-link {
+    padding: 6px 12px !important;
+    border-radius: 50rem;
+    font-size: 15px;
+    font-weight: 600;
+    color: $text-muted;
+
+    &:hover { color: $text; }
+
+    &.active {
+      background: rgba($lime, .12);
+      color: $lime;
+    }
+  }
+
+  .navbar-email {
+    font-size: 13px;
+    color: $text-muted;
+  }
+
+  // "Log out", "Log in": transparent with a grey border
+  .btn-ghost {
+    border-color: $border-strong;
+    color: $text;
+
+    &:hover { border-color: $text-muted; color: $text; }
+  }
+}

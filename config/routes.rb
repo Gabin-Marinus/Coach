@@ -7,6 +7,7 @@ Rails.application.routes.draw do
     get :plans
     get :workouts
     get :meals
+    patch :theme # light / dark switch in the navbar
   end
 
   resources :chats, only: [:index, :show, :create, :destroy] do

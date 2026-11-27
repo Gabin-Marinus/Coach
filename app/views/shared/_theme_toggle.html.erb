@@ -1,0 +1,14 @@
+<%# Sun/moon button: both are rendered, and each design's stylesheet hides the one it doesn't need
+    (components/_theme_toggle.scss), so it also works with "Same as my device" %>
+<div class="d-inline-flex <%= local_assigns[:classes] %>">
+  <%= button_to theme_profile_path, method: :patch, params: { theme: "dark" },
+                class: "theme-toggle theme-toggle-to-dark", form: { class: "d-inline" },
+                title: "Switch to the dark design", aria: { label: "Switch to the dark design" } do %>
+    <i class="fa-solid fa-moon"></i>
+  <% end %>
+  <%= button_to theme_profile_path, method: :patch, params: { theme: "light" },
+                class: "theme-toggle theme-toggle-to-light", form: { class: "d-inline" },
+                title: "Switch to the light design", aria: { label: "Switch to the light design" } do %>
+    <i class="fa-solid fa-sun"></i>
+  <% end %>
+</div>

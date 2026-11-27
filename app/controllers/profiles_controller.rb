@@ -8,6 +8,12 @@ class ProfilesController < ApplicationController
   def edit
   end
 
+  # Sun/moon button in the navbar: switches the design right away (only this setting, no profile checks)
+  def theme
+    @user.update(theme: params[:theme]) if User::THEMES.key?(params[:theme])
+    redirect_back fallback_location: root_path, status: :see_other
+  end
+
   def update
     @user.assign_attributes(profile_params)
 
@@ -69,7 +75,7 @@ class ProfilesController < ApplicationController
       :activity_level, :diet_type, :food_dislikes, :meals_per_day, :cooking_time,
       :fitness_level, :training_location, :training_days_per_week,
       :session_minutes, :preferred_time, :injury_notes, :exercise_dislikes,
-      :city, :country, :food_budget, :food_budget_period, :currency, :favorite_meals, :regular_sessions,
+      :city, :country, :food_budget, :food_budget_period, :currency, :favorite_meals, :regular_sessions, :theme,
       allergies: [], exercise_types: [], equipment: [], injuries: [], goals: []
     )
   end
