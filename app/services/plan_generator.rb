@@ -12,7 +12,9 @@ class PlanGenerator
   DEFAULT_MEALS_PER_DAY = 3
   DEFAULT_TRAINING_DAYS = 3
   DAYS = (1..7).map { |day| "day_#{day}" }.freeze
-  MAX_WEEK_INGREDIENTS = 25 # keeps the weekly shopping list short
+  MAX_WEEK_INGREDIENTS = 35 # keeps the weekly shopping list short (pantry staples not counted)
+  MIN_MAIN_INGREDIENTS = 4  # a lunch or dinner with fewer is missing ingredients (lasagna with only salmon and spinach)
+  PANTRY_STAPLES = "oil, butter, salt, pepper, spices, dried herbs, garlic, flour, stock cubes, vinegar, soy sauce"
   CALORIE_MARGIN = 0.02     # a day within 2% of the calorie target is left as it is
   SCALE_LIMITS = (0.6..1.6) # portions are never scaled more than this
   MIN_DIFFERENT_DISHES = 12 # of the 14 lunches and dinners of a week
@@ -170,24 +172,25 @@ class PlanGenerator
     attempts = []
     2.times do
       week = parse_week(ask(prompt, workouts: workouts))
-      next unless usable?(week)
+      next unless usable?(week) && (!workouts || enough_workouts?(week))
 
       place_workouts(week)
       fit_to_calorie_target(week)
       return week if good?(week)
 
       attempts << week
-      Rails.logger.warn("[PlanGenerator] Week not varied enough or too little protein, asking again")
+      Rails.logger.warn("[PlanGenerator] Week not varied enough, missing ingredients or too little protein, asking again")
     end
     attempts.first || raise(Error, "The AI's week of meals was unusable twice")
   end
 
-  # After scaling: varied lunches and dinners, and enough protein
-  # (the AI sometimes alternated the same 2 dishes all week)
+  # After scaling: varied lunches and dinners with all their ingredients, and enough protein
+  # (the AI sometimes alternated the same 2 dishes all week, or left out the milk, onions, pasta...)
   def good?(week)
     dishes = week["meals"].select { |meal| %w[lunch dinner].include?(meal["meal_type"]) }
     protein_per_day = week["meals"].sum { |meal| meal["protein_g"].to_i } / 7.0
     dishes.map { |meal| meal["name"].to_s.downcase.strip }.uniq.size >= MIN_DIFFERENT_DISHES &&
+      dishes.all? { |meal| Array(meal["ingredients"]).size >= MIN_MAIN_INGREDIENTS } &&
       (targets.protein_g.nil? || protein_per_day >= targets.protein_g * MIN_PROTEIN_SHARE)
   end
 
@@ -202,6 +205,12 @@ class PlanGenerator
     end
   end
 
+  # Regular sessions + new workouts = the user's training days
+  def enough_workouts?(week)
+    regular, new_workouts = week["workouts"].partition { |workout| workout["regular"] }
+    new_workouts.size >= new_workouts_needed(regular.size)
+  end
+
   # Calorie and protein targets; the workouts count once week 1 is known (see #call)
   def targets
     @user.nutrition_targets(weekly_workout_minutes: @weekly_workout_minutes)
@@ -209,10 +218,35 @@ class PlanGenerator
 
   # "Tuesday" => the plan's day number of that weekday (day 1 is the start date)
   def place_workouts(week)
+    spread_new_workouts(week["workouts"])
     week["workouts"].each do |workout|
       weekday = Date::DAYNAMES.index(workout["weekday"]) || start_date.wday
       workout["day"] = ((weekday - start_date.wday) % 7) + 1
     end
+  end
+
+  # The AI put a new workout on Friday, right before Saturday boxing: a new workout next to another session
+  # moves to the free weekday with the most rest around it (Tuesday or Wednesday). Regular sessions never move.
+  def spread_new_workouts(workouts)
+    workouts.reject { |workout| workout["regular"] }.each do |workout|
+      others = (workouts - [workout]).filter_map { |other| Date::DAYNAMES.index(other["weekday"]) }
+      free_days = (0..6).to_a - others
+      next if others.empty? || free_days.empty?
+
+      current_rest = rest_around(Date::DAYNAMES.index(workout["weekday"]), others)
+      next if current_rest >= 2 # already a rest day on both sides: the AI's day is kept
+
+      best = free_days.max_by { |day| rest_around(day, others) }
+      workout["weekday"] = Date::DAYNAMES[best] if rest_around(best, others) > current_rest
+    end
+  end
+
+  # Days between this weekday and the closest other session, around the week (Sunday is next to Monday)
+  # (0 if the day is unknown or already taken)
+  def rest_around(day, others)
+    return 0 if day.nil? || others.include?(day)
+
+    others.map { |other| [(day - other) % 7, (other - day) % 7].min }.min
   end
 
   def default_training_weekdays
@@ -253,10 +287,10 @@ class PlanGenerator
     meals_of_a_day = { type: "array", items: MEAL_SCHEMA, minItems: meals_per_day, maxItems: meals_per_day }
     properties = {}
     if workouts
-      # Written first: the sessions the user already does every week (from the chat), then exactly
-      # the profile's number of new workouts (the AI skipped the regular sessions when they were mixed)
+      # Written first: the sessions the user already does every week (profile and chat), then the new
+      # workouts to reach the profile's training days in total (checked in #usable?, trimmed in #parse_week)
       properties[:regular_sessions] = { type: "array", items: REGULAR_SESSION_SCHEMA, maxItems: 7 }
-      properties[:workouts] = { type: "array", items: WORKOUT_SCHEMA, minItems: training_days, maxItems: training_days }
+      properties[:workouts] = { type: "array", items: WORKOUT_SCHEMA, maxItems: training_days }
     end
     # Before the meals, so the AI plans a short shopping list and varied dishes first
     properties[:week_ingredients] = { type: "array", items: { type: "string" }, maxItems: MAX_WEEK_INGREDIENTS }
@@ -284,9 +318,11 @@ properties: properties }
     end
     regular = Array(answer["regular_sessions"]).map do |session|
       session.merge("description" => "Your regular weekly session: it's part of your plan, keep it up!",
-                    "exercises" => [])
+                    "exercises" => [], "regular" => true)
     end
-    { "workouts" => regular + Array(answer["workouts"]), "meals" => meals }
+    # The regular sessions count in the user's training days: only the missing ones are new workouts
+    new_workouts = Array(answer["workouts"]).first(new_workouts_needed(regular.size))
+    { "workouts" => regular + new_workouts, "meals" => meals }
   end
 
   def conversation
@@ -305,6 +341,11 @@ properties: properties }
     @user.training_days_per_week || DEFAULT_TRAINING_DAYS
   end
 
+  # 2 training days with boxing on Saturday => 1 new workout
+  def new_workouts_needed(regular_count)
+    [training_days - regular_count, 0].max
+  end
+
   # The most important rules come first: with low thinking effort the AI follows the top of the list best
   def meal_rules
     <<~RULES
@@ -318,8 +359,9 @@ properties: properties }
         Only common supermarket ingredients: no niche grains or specialty products (e.g. no farro,
         freekeh, teff, amaranth, tahini, miso).
       - Short shopping list: at most #{MAX_WEEK_INGREDIENTS} different ingredients in the whole week (not counting
-        oil, salt and spices). Reuse the same ingredients in several meals (e.g. one bag of spinach for an
-        omelette, a pasta and a curry; one pack of chicken for two dinners).
+        pantry staples: #{PANTRY_STAPLES}). Reuse the same ingredients in several meals (e.g. one bag of spinach
+        for an omelette, a pasta and a curry; one pack of chicken for two dinners; milk for the oats and a béchamel).
+        Never leave out an ingredient a dish needs to stay under this limit: choose simpler dishes instead.
       - Time-saving forms are welcome: frozen berries, frozen vegetable mixes, canned beans and tomatoes,
         pre-washed salad, microwave rice pouches.
       - Respect the user's diet, allergies, food dislikes and cooking time. Include the favourite meals
@@ -334,7 +376,9 @@ properties: properties }
         a tray bake, an omelette, a stir-fry): not the same bowl or salad again with small changes.
         Use at most 3 different breakfasts and 2 different snacks in the week, repeated on several days.
       - meal_type is one of: #{Meal::MEAL_TYPES.keys.join(', ')}.
-      - Keep descriptions to one sentence and recipes to at most 3 short steps.
+      - Descriptions are one sentence. Recipes are 3 to 5 short steps that name each ingredient with its amount
+        (e.g. "Fry 1 chopped onion and 1 garlic clove in 1 tsp oil, add 1 tbsp curry paste and 200 g canned
+        tomatoes...") and explain any sauce (e.g. béchamel: melt 10 g butter, stir in 10 g flour, whisk in 150 ml milk).
 
       #{Meal::INGREDIENT_RULES}
     RULES
@@ -351,8 +395,9 @@ properties: properties }
     <<~FORMAT
       Answer format:
       - First "week_ingredients": the at most #{MAX_WEEK_INGREDIENTS} ingredients you will cook with this week
-        (not counting oil, salt, pepper and spices), seasonal for the user's country (see the rules above)
-        and enough to cook varied dishes. Then use ONLY these in the meals.
+        (not counting pantry staples), seasonal for the user's country (see the rules above), with everything
+        the dishes need (milk, onions, the pasta or lasagna sheets...). Then use only these and pantry staples
+        in the meals, and list every one a meal uses in its "ingredients".
       - Then "lunch_and_dinner_dishes": the 14 lunches and dinners of the week, 14 DIFFERENT dishes
         (each favourite of the user at most twice, at most 2 with the same base like pasta or rice).
       - Then "days" has day_1 to day_7 (day_1 is the first day of the plan). Each day has
@@ -370,11 +415,21 @@ properties: properties }
       #{@user.coach_context}
 
       Workout rules:
-      - "regular_sessions": every session the user said in the conversation they already do each week
-        (e.g. football on Tuesday, a yoga class on Saturday), on its usual weekday. Empty if none.
-      - "workouts": exactly #{training_days} NEW workouts, on other days than the regular sessions, with rest
-        days in between. Without regular sessions, use #{default_training_weekdays}.
-      - New workouts respect the user's session length, equipment, training location, injuries and exercise dislikes.
+      - The user trains #{training_days} days per week IN TOTAL. Their regular sessions count in this number.
+      - "regular_sessions": the sessions the user already does on their own every week, from "Regular sessions"
+        in the profile and from the conversation (e.g. boxing on Saturday, a football match on Tuesday), on
+        their usual weekday, with their real length. Only sessions the app doesn't need to plan. Empty if none.
+      - "workouts": the NEW workouts the app plans: #{training_days} minus the number of regular sessions
+        (e.g. #{training_days} training days and 1 regular session = #{[training_days - 1, 0].max} new workouts;
+        none if the regular sessions already fill the training days). On other days than the regular sessions,
+        with rest days in between. Without regular sessions, use #{default_training_weekdays}.
+      - If the user described the format of a session or asked the app to fill part of it (e.g. "I run 20 min and
+        then do exercises you suggest"), it is one of the NEW workouts, built exactly that way: put the run in
+        "warm_up" (e.g. "20 min easy run"), then a strength circuit, and count the run in "duration_min".
+        Never replace it with another kind of session (no HIIT instead of the run). It is not a regular session.
+      - Spread the sessions over the week: at least one rest day between two sessions when possible
+        (e.g. boxing on Saturday + 1 new workout => Tuesday or Wednesday, not Friday or Sunday).
+      - New workouts follow the plan proposed in the conversation and respect the user's session length, equipment, training location, injuries and exercise dislikes.
       - Each new workout is a circuit: "warm_up" (done once, e.g. "5 min brisk walk + arm circles"),
         then "rounds" of ALL "exercises" one after the other, with "round_rest_sec" rest after each round,
         then "cool_down" (done once). Exercises are only the main moves (no warm-up or stretches in the list),

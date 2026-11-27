@@ -10,7 +10,6 @@ class MessagesController < ApplicationController
 
     @chat.with_instructions(@chat.instructions)
     @chat.ask(content)
-    @chat.generate_title_from_first_message
 
     redirect_to chat_path(@chat)
   rescue RubyLLM::Error

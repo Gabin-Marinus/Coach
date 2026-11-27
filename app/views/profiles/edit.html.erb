@@ -156,7 +156,7 @@
 
     <div class="row">
       <div class="col-md-6">
-        <%= f.input :training_days_per_week, label: "Days per week",
+        <%= f.input :training_days_per_week, label: "Training days per week (in total)",
                     collection: User::TRAINING_DAYS,
                     prompt: "Choose one", required: true %>
       </div>
@@ -166,6 +166,11 @@
                     prompt: "Choose one", required: true %>
       </div>
     </div>
+
+    <%= f.input :regular_sessions, label: "Sessions you already do every week (optional)",
+                hint: "They count in your training days. Describe a session's format and your coach builds it that way.",
+                input_html: { rows: 2, maxlength: 500,
+                              placeholder: "e.g. boxing on Saturday (60 min); once a week a 20 min run, then strength exercises" } %>
 
     <%= f.input :preferred_time, label: "When do you prefer to train? (optional)",
                 collection: User::PREFERRED_TIMES.invert,

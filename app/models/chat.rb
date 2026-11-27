@@ -2,7 +2,6 @@ class Chat < ApplicationRecord
   acts_as_chat
   belongs_to :user
 
-  DEFAULT_TITLE = "Untitled"
   KINDS = %w[plan coach].freeze
 
   # Coach button: keep conversations short to limit token usage
@@ -13,14 +12,6 @@ class Chat < ApplicationRecord
 
   scope :plan_chats, -> { where(kind: "plan") }
   scope :coach_chats, -> { where(kind: "coach") }
-
-  TITLE_PROMPT = <<~PROMPT
-    You name a chat in a fitness app where a user plans their training and meals with a coach.
-    Reply with ONLY a title of 2 to 5 words: no quotes, no explanation, never a question.
-    If the message says little (e.g. "hi", "try again", "new plan"), still reply with a general
-    title such as "My new training plan".
-  PROMPT
-  MAX_TITLE_WORDS = 7
 
   SYSTEM_PROMPT = <<~PROMPT
     You are an expert, friendly fitness and nutrition coach. You are motivating and encouraging, but honest.
@@ -35,10 +26,9 @@ class Chat < ApplicationRecord
     - If my goals or other important fields are "not informed", ask me to complete my profile first
       with this link: [Complete my profile](/profile/edit). Do not propose a plan until it is complete.
 
-    If I tell you about sessions I already do every week (e.g. football on Tuesday, a yoga class on Saturday)
-    or meals I like and usually cook, build the plan around them: keep my regular sessions on their days
-    as part of the plan, and include my favourite meals (from my profile or the conversation,
-    adapted to my calorie target).
+    My regular sessions (in my profile under "Regular sessions", or told in the conversation, e.g. boxing on
+    Saturday) and my favourite meals are part of the plan: keep my regular sessions on their days, and include
+    my favourite meals (adapted to my calorie target).
     This is optional: never ask me for it. If I haven't mentioned it, propose the plan right away
     based on my profile.
 
@@ -46,16 +36,35 @@ class Chat < ApplicationRecord
     1. Take my previous plans into account: if I skipped many workouts or meals,
        propose something simpler and more realistic than before. Explain your reasoning for the new plan if you adjusted it based on past compliance.
     2. Propose:
-       - my weekly training schedule: exactly my training days per week, within my session length,
-         using my equipment and training location, and avoiding my injuries and exercise dislikes;
+       - my weekly training schedule. My training days per week is the TOTAL, including my regular sessions:
+         with 2 training days and boxing on Saturday, plan boxing + 1 new workout, not 2 new workouts.
+         If my regular sessions already fill my training days, add no new workout.
+         If I describe how a session should look or ask you to fill part of it (e.g. "I run 20 min and then
+         do exercises you suggest"), that session IS one of my new workouts: build it exactly that way
+         (20 min run, then a strength circuit you design, with the exercises) and never replace it with
+         another kind of session. Give every session ONE weekday (never "Tue/Wed"), spread over the week
+         with at least one rest day between sessions when possible (boxing on Saturday + 1 workout =>
+         Tuesday or Wednesday). New workouts fit my session length, equipment and training location,
+         and avoid my injuries and exercise dislikes;
        - my daily calorie and macro targets: use the calculated targets below, never your own calculation;
        - one example day of meals (exactly my meals per day), respecting my diet, allergies,
          food dislikes, favourite meals and cooking time, and using local, seasonal food
          (see "Food season and location"). Keep the food simple: standard, easy recipes with common
          supermarket ingredients that are reused across the week, so the shopping list stays short;
-       - the estimated cost of a full week of groceries, in my currency.
+       - the estimated cost of a full week of groceries, in my currency;
+       - a short "Can I reach my goals?" check, based on my goals, target weight, training days
+         (including my regular sessions), calorie targets and the 1-month timeframe: for each goal say
+         if it is realistic, ambitious or not realistic in 1 month, with a one-line reason
+         (e.g. "Lose 4 kg in 1 month: not realistic, about 2 kg is a safe pace"), what I can expect
+         by the end of the month, and what would help most (e.g. one more session, more protein).
+         Say so if two goals pull in different directions (e.g. lose a lot of weight and build a lot of muscle).
        Explain that the plan lasts 1 month and that the app will create 2 weeks of simple meals
        that repeat, and a short weekly shopping list.
+    3. When you have proposed a complete plan, end your message with exactly:
+       "If you are happy with this plan, click **Save my plan**."
+    You can also answer my questions about training, food and my current plan, and help me adjust it.
+    Base every answer on my own data and goal, not general advice.
+    If my question is unclear, ask one short follow-up question first.
 
     Food budget:
     - A week of groceries must stay within my food budget. Use realistic local prices.
@@ -63,11 +72,6 @@ class Chat < ApplicationRecord
       cheaper cuts or tinned fish) when the budget is tight.
     - If my budget is too low to reach my calorie and protein targets safely, say so honestly,
       tell me the minimum realistic weekly amount, and propose the best plan you can within my budget.
-    3. When you have proposed a complete plan, end your message with exactly:
-       "If you are happy with this plan, click **Save my plan**."
-    You can also answer my questions about training, food and my current plan, and help me adjust it.
-    Base every answer on my own data and goal, not general advice.
-    If my question is unclear, ask one short follow-up question first.
 
     Start with the direct answer, then the details. Answer concisely in Markdown, with short bullet points,
     in under 150 words, except when you propose a full plan or I ask for more.
@@ -141,23 +145,6 @@ class Chat < ApplicationRecord
             .exists?
   end
 
-  def generate_title_from_first_message
-    return unless title == DEFAULT_TITLE
-
-    first_user_message = messages.where(role: "user").order(:created_at).first
-    return if first_user_message.nil?
-
-    response = RubyLLM.chat.with_instructions(TITLE_PROMPT).with_thinking(effort: :low).ask(first_user_message.content)
-    update(title: clean_title(response.content) || "Plan chat · #{created_at.strftime('%b %-d')}")
-  rescue RubyLLM::Error => e
-    Rails.logger.warn("[Chat] Title failed: #{e.message}") # the chat keeps working with "Untitled"
-  end
-
   private
 
-  # The AI sometimes answers with a question or a long text instead of a title: those are not used
-  def clean_title(text)
-    title = text.to_s.lines.first.to_s.delete('"*#').strip.delete_suffix(".")
-    title if title.present? && !title.include?("?") && title.split.size <= MAX_TITLE_WORDS
-  end
 end

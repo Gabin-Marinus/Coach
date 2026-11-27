@@ -24,12 +24,25 @@ class Meal < ApplicationRecord
 
   # How the AI must write ingredients, used by PlanGenerator and MealIngredients
   INGREDIENT_RULES = <<~RULES.freeze
-    Ingredients (used for the weekly shopping list):
-    - Everything for ONE serving. Simple supermarket names, always the same name for the same
-      ingredient (e.g. "rolled oats", "frozen mixed berries", "canned chickpeas", "spinach").
-    - unit is one of: #{INGREDIENT_UNITS.join(', ')} (pcs = pieces, e.g. eggs, bananas, onions).
+    Ingredients (used for the weekly shopping list, so it must be COMPLETE):
+    - EVERY ingredient needed to cook the recipe, for ONE serving: nothing may be missing.
+      Every ingredient named in the recipe is in the list, and every listed ingredient is used in the recipe.
+    - Sauces and bases are split into their ingredients: béchamel = milk, butter, flour;
+      curry = onion, garlic, curry paste, canned tomatoes, coconut milk; a dressing = oil, lemon, mustard.
+    - Include the liquid (milk for overnight oats or porridge, stock for soup), the aromatics (onion, garlic,
+      ginger), the vegetables of the dish, the pasta or lasagna sheets, cheese, oil and spices.
+      Only water is never listed.
+    - A leftovers meal lists the full ingredients of its serving again (the dish was cooked for 2 servings).
+    - Simple supermarket names, always the same name for the same
+      ingredient (e.g. "rolled oats", "frozen mixed berries", "canned chickpeas", "spinach", "milk").
+      The name is only the product: no notes, uses or choices ("milk", not "milk (for béchamel)";
+      "curry powder", not "curry powder or spices"; "brown rice", not "brown rice (dry)").
+    - unit is one of: #{INGREDIENT_UNITS.join(', ')} (pcs = pieces, e.g. eggs, bananas, onions, garlic cloves).
+      Pasta, lasagna sheets, rice, oats, bread, meat, fish, cheese and vegetables you weigh are in g
+      (dry weight for pasta and rice, e.g. 90 g lasagna sheets, 75 g rice), liquids in ml.
     - category is one of: #{SHOPPING_CATEGORIES.join(', ')}.
-    - "quantity": null for salt, pepper and spices "to taste".
+    - "quantity" is ALWAYS a number with its unit (e.g. 60 g oats, 150 ml milk, 1 pcs onion, 5 ml oil),
+      except salt, pepper and spices "to taste": null.
   RULES
 
   # JSON schema of one ingredient, for the AI's structured output (see PlanGenerator, MealIngredients)

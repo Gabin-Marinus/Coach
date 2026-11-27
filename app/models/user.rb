@@ -178,7 +178,7 @@ class User < ApplicationRecord
   validates :currency, inclusion: { in: CURRENCIES.keys }, allow_blank: true
   validates :country, inclusion: { in: COUNTRIES }, allow_blank: true
   validates :city, length: { maximum: 100 }
-  validates :favorite_meals, length: { maximum: 500 }
+  validates :favorite_meals, :regular_sessions, length: { maximum: 500 }
   normalizes :city, :country, with: ->(value) { value.strip.presence }
 
   before_validation :clean_array_fields
@@ -286,7 +286,8 @@ class User < ApplicationRecord
       - Preferred exercise: #{labels(EXERCISE_TYPES, exercise_types)}
       - Equipment: #{labels(EQUIPMENT, equipment)}
       - Training location: #{label(TRAINING_LOCATIONS, training_location)}
-      - Training days per week: #{training_days_per_week || 'not informed'}
+      - Training days per week (total, including my regular sessions): #{training_days_per_week || 'not informed'}
+      - Regular sessions I already do every week: #{regular_sessions.presence || 'none'}
       - Session length: #{session_minutes ? "#{session_minutes} min" : 'not informed'}
       - Preferred time: #{label(PREFERRED_TIMES, preferred_time)}
       - Injuries: #{labels(INJURIES, injuries)}

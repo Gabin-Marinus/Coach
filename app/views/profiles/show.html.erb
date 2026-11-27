@@ -104,6 +104,9 @@
           <% end %>
         </dd>
 
+        <dt class="col-sm-5">Regular sessions</dt>
+        <dd class="col-sm-7"><%= @user.regular_sessions.presence || "–" %></dd>
+
         <dt class="col-sm-5">Preferred time</dt>
         <dd class="col-sm-7"><%= option_label(User::PREFERRED_TIMES, @user.preferred_time, blank: "No preference") %></dd>
 
