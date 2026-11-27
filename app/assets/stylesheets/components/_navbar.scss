@@ -1,7 +1,8 @@
-// Black navbar with neon accents
+// Black navbar: lime logo, lime active link
 .navbar-coach {
   padding: 12px 24px;
-  background: $fit-black;
+  border-bottom: 2px solid $lime; // neon lime line under the navbar
+  background: $black;
 
   .navbar-brand {
     display: inline-flex;
@@ -10,18 +11,18 @@
     font-size: 20px;
     font-weight: 800;
     letter-spacing: -.02em;
-    color: $fit-white;
+    color: $text;
   }
 
   .navbar-logo {
     width: 12px;
     height: 12px;
     border-radius: 3px;
-    background: $fit-green;
+    background: $lime;
   }
 
   .navbar-toggler {
-    border-color: rgba($fit-white, .2);
+    border-color: $border-strong;
   }
 
   .nav-link {
@@ -29,32 +30,26 @@
     border-radius: 50rem;
     font-size: 15px;
     font-weight: 600;
-    color: rgba($fit-white, .7);
+    color: $text-muted;
 
-    &:hover { color: $fit-white; }
+    &:hover { color: $text; }
 
     &.active {
-      background: rgba($fit-green, .12);
-      color: $fit-green;
+      background: rgba($lime, .12);
+      color: $lime;
     }
   }
 
   .navbar-email {
     font-size: 13px;
-    color: rgba($fit-white, .45);
+    color: $text-muted;
   }
 
-  .btn-neon {
-    background: $fit-green;
-    color: $fit-black;
-
-    &:hover { background: $fit-green-40; color: $fit-black; }
-  }
-
+  // "Log out", "Log in": transparent with a grey border
   .btn-ghost {
-    border-color: rgba($fit-white, .25);
-    color: $fit-white;
+    border-color: $border-strong;
+    color: $text;
 
-    &:hover { border-color: $fit-white; color: $fit-white; }
+    &:hover { border-color: $text-muted; color: $text; }
   }
 }
