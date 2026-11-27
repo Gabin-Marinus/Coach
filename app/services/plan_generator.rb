@@ -312,6 +312,7 @@ properties: properties }
       - #{targets.to_prompt.gsub("\n", "\n  ")}
         Every day must add up to the calorie target (portions for one person).
       - #{@user.seasonal_food_rule(start_date, end_date)}
+      #{budget_rule}
       - Simple, everyday food: standard, well-known recipes that are easy to cook (e.g. omelette,
         overnight oats, chili, stir-fry, pasta with sauce, tray bake, soup, wraps, curry with rice).
         Only common supermarket ingredients: no niche grains or specialty products (e.g. no farro,
@@ -321,9 +322,9 @@ properties: properties }
         omelette, a pasta and a curry; one pack of chicken for two dinners).
       - Time-saving forms are welcome: frozen berries, frozen vegetable mixes, canned beans and tomatoes,
         pre-washed salad, microwave rice pouches.
-      - Respect the user's diet, allergies, food dislikes and cooking time. Include the dishes and foods
-        the user said in the conversation they like or usually cook (fitted to the calorie target),
-        each favourite once or twice a week, not every day.
+      - Respect the user's diet, allergies, food dislikes and cooking time. Include the favourite meals
+        from the user's profile and the dishes and foods the user said in the conversation they like or
+        usually cook (fitted to the calorie target), each favourite once or twice a week, not every day.
       - Vary the base: at most 2 lunches or dinners per week with the same base (pasta, rice, potatoes,
         bread, quinoa...).
 
@@ -337,6 +338,13 @@ properties: properties }
 
       #{Meal::INGREDIENT_RULES}
     RULES
+  end
+
+  def budget_rule
+    return "- Keep the meals affordable, using cheap everyday staples." if @user.weekly_food_budget.nil?
+
+    "- Budget: all the meals of the week together must cost at most #{@user.weekly_food_budget} " \
+      "#{@user.currency} in groceries, at realistic local prices."
   end
 
   def answer_format

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_155751) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -421,6 +421,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_155751) do
     t.text "exercise_dislikes"
     t.string "goals", default: [], array: true
     t.string "country"
+    t.string "city"
+    t.decimal "food_budget", precision: 8, scale: 2
+    t.string "food_budget_period"
+    t.string "currency"
+    t.text "favorite_meals"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

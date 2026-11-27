@@ -21,9 +21,6 @@
         <dt class="col-sm-5">Sex</dt>
         <dd class="col-sm-7"><%= option_label(User::SEXES, @user.sex) %></dd>
 
-        <dt class="col-sm-5">Country</dt>
-        <dd class="col-sm-7"><%= @user.country.presence || "–" %></dd>
-
         <dt class="col-sm-5">Height</dt>
         <dd class="col-sm-7"><%= @user.height_cm ? "#{@user.height_cm} cm" : "–" %></dd>
 
@@ -32,6 +29,9 @@
 
         <dt class="col-sm-5">Activity outside workouts</dt>
         <dd class="col-sm-7"><%= option_label(User::ACTIVITY_LEVELS, @user.activity_level) %></dd>
+
+        <dt class="col-sm-5">Location</dt>
+        <dd class="col-sm-7"><%= @user.location || "–" %></dd>
       </dl>
     </div>
   </div>
@@ -67,6 +67,12 @@
 
         <dt class="col-sm-5">Cooking time</dt>
         <dd class="col-sm-7"><%= option_label(User::COOKING_TIMES, @user.cooking_time) %></dd>
+
+        <dt class="col-sm-5">Food budget</dt>
+        <dd class="col-sm-7"><%= @user.food_budget_text || "–" %></dd>
+
+        <dt class="col-sm-5">Favourite meals</dt>
+        <dd class="col-sm-7"><%= @user.favorite_meals.presence || "–" %></dd>
       </dl>
     </div>
   </div>

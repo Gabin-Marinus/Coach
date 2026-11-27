@@ -15,7 +15,8 @@ class PlanSummary
       **Calories** (maintenance vs. planned intake, why: to lose, keep or gain weight, the deficit or surplus if any, the expected pace per week
       and, if there is a target weight, roughly when they reach it), **Protein** (grams per day and per kg
       of body weight, and why it matters for their goals), **Training** (how many sessions and why this
-      fits their level, time and equipment), **Food** (diet, allergies or other preferences respected).
+      fits their level, time and equipment), **Food** (diet, allergies or other preferences respected,
+      favourite meals, seasonal local food, and how the meals fit their food budget).
     - If the pace is faster than about 1% of body weight per week, say so and recommend a slower pace.
     - If the planned intake is within 50 kcal of the calorie target, say it matches the target:
       don't call such a small difference a deficit or surplus.
@@ -53,6 +54,9 @@ class PlanSummary
     lines << "- Current weight: #{weight || '?'} kg, target weight: #{@user.target_weight_kg || 'not set'} kg"
     lines << "- Activity outside workouts: #{User::ACTIVITY_LEVELS[@user.activity_level] || 'unknown'}"
     lines << "- Diet: #{User::DIET_TYPES[@user.diet_type] || 'not set'}, allergies: #{@user.allergies.join(', ').presence || 'none'}"
+    lines << "- Location: #{@user.location || 'not set'}, today: #{Date.today}"
+    lines << "- Food budget: #{@user.food_budget_text || 'not set'}"
+    lines << "- Favourite meals: #{@user.favorite_meals.presence || 'none'}"
     lines.concat(calorie_facts)
     lines.concat(protein_facts)
     lines.concat(training_facts)
