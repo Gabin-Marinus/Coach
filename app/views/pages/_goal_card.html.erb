@@ -2,6 +2,17 @@
 <% target = user.target_weight_kg %>
 
 <section class="dash-goal">
+  <%# Decorative neon swoosh on the right, behind the text (hidden under 1024px) %>
+  <div class="dash-goal-swoosh" aria-hidden="true">
+    <svg viewBox="0 0 320 220" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <path d="M10 230 C 120 215, 190 120, 330 20" fill="none" stroke="#C6F432" stroke-width="16" stroke-linecap="round" opacity="0.9"/>
+      <path d="M60 240 C 150 222, 215 150, 330 78" fill="none" stroke="#F59E0B" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
+      <path d="M-10 200 C 100 192, 160 95, 330 -10" fill="none" stroke="#C6F432" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+      <path d="M110 240 C 185 228, 240 182, 330 132" fill="none" stroke="#C6F432" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+      <path d="M150 240 C 215 232, 265 205, 330 172" fill="none" stroke="#F59E0B" stroke-width="1.2" stroke-linecap="round" opacity="0.35"/>
+    </svg>
+  </div>
+
   <% if plan %>
     <p class="dash-goal-plan"><strong><%= plan.title %></strong> · <%= plan.timeframe %></p>
   <% end %>
