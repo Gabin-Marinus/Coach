@@ -39,19 +39,24 @@ class MealIngredients
     unique_meals = @meals.select { |meal| meal.ingredients.empty? }.uniq(&:name)
     return if unique_meals.empty?
 
-    question = unique_meals.each_with_index.map do |meal, index|
-      "#{index + 1}. #{meal.name}: #{meal.description} Recipe: #{meal.recipe}"
+    lists = self.class.ingredients_for(unique_meals.map { |meal| meal.slice(:name, :description, :recipe).stringify_keys })
+    unique_meals.zip(lists).each do |meal, ingredients|
+      next if ingredients.blank?
+
+      @plan.meals.without_ingredients.where(name: meal.name).update_all(ingredients: ingredients)
+    end
+  end
+
+  # [{ "name", "description", "recipe" }] => their ingredients, in the same order (nil if the AI skipped one).
+  # AI only (no database), so PlanGenerator can also use it to complete meals with missing ingredients.
+  def self.ingredients_for(meals)
+    question = meals.each_with_index.map do |meal, index|
+      "#{index + 1}. #{meal['name']}: #{meal['description']} Recipe: #{meal['recipe']}"
     end.join("\n")
 
     # "low": listing ingredients needs little thinking, so the answer is much faster ("minimal" forgets the quantities)
     answer = RubyLLM.chat.with_instructions(PROMPT).with_thinking(effort: :low).with_schema(SCHEMA).ask(question).parsed
-
-    Array(answer["meals"]).each do |result|
-      meal = unique_meals[result["number"].to_i - 1]
-      next if meal.nil? || result["number"].to_i < 1
-
-      ingredients = Meal.clean_ingredients(result["ingredients"])
-      @plan.meals.without_ingredients.where(name: meal.name).update_all(ingredients: ingredients)
-    end
+    by_number = Array(answer["meals"]).to_h { |result| [result["number"].to_i, Meal.clean_ingredients(result["ingredients"])] }
+    meals.each_index.map { |index| by_number[index + 1] }
   end
 end

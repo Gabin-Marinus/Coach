@@ -1,0 +1,2 @@
+<%# The plan is being made in the background: the buttons become a live progress box (PlanGenerationJob) %>
+<%= turbo_stream.replace "plan_actions", partial: "chats/plan_progress", locals: { chat: @chat, step: :reading } %>

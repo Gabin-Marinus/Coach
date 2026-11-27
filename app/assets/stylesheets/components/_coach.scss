@@ -179,3 +179,19 @@
 @keyframes coach-typing {
   50% { opacity: .4; }
 }
+
+// Live progress while a plan is saved (chats/_plan_progress). Not ".plan-progress": that is the bar on All plans
+.plan-saving-steps li {
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+
+  &.is-done { color: rgba($fit-black, .55); }
+  &.is-active { font-weight: 600; }
+  &.is-waiting { color: rgba($fit-black, .35); }
+}
+
+.plan-saving-icon {
+  width: 18px;
+  text-align: center;
+}

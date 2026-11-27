@@ -2,17 +2,21 @@
 <html>
   <head>
     <title><%= content_for(:title) || "Coach" %></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <%# viewport-fit=cover: the app uses the whole screen on phones with a notch (see the safe-area paddings) %>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Coach">
     <meta name="application-name" content="Coach">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0A0A0A">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%# Installable app: "Add to Home Screen" opens Coach full screen, like a phone app %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -23,7 +27,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body class="<%= 'has-tabbar' if user_signed_in? %>">
     <%= render "shared/navbar" %>
     <%= render "shared/flashes" %>
     <%= yield %>
@@ -31,4 +35,7 @@
     <% if user_signed_in? && !devise_controller? && controller_name != "chats" %>
       <%= render "shared/coach_widget" %>
     <% end %>
+
+    <%# Phones: app-style tab bar at the bottom (the top menu is for bigger screens) %>
+    <%= render "shared/tabbar" if user_signed_in? %>
   </body>

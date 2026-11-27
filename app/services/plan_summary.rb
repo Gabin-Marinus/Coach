@@ -40,8 +40,20 @@ class PlanSummary
 
   # Saves and returns the summary
   def call
-    question = ["## Facts", facts, ("## Conversation\n#{@conversation}" if @conversation.present?)].compact.join("\n\n")
-    summary = RubyLLM.chat.with_instructions(PROMPT).ask(question).content.to_s.strip
+    save(self.class.ask(question))
+  end
+
+  # Split in 3 so PlanGenerator can run the AI part at the same time as the shopping lists:
+  # question (database) => ask (AI only, safe in a thread) => save (database)
+  def question
+    ["## Facts", facts, ("## Conversation\n#{@conversation}" if @conversation.present?)].compact.join("\n\n")
+  end
+
+  def self.ask(question)
+    RubyLLM.chat.with_instructions(PROMPT).with_thinking(effort: :low).ask(question).content.to_s.strip
+  end
+
+  def save(summary)
     @plan.update!(summary: summary)
     summary
   end

@@ -1,0 +1,116 @@
+// Phone app look: bottom tab bar, notch-safe spacing, no zoom on form fields, comfortable tap targets.
+// (Bootstrap's "md" breakpoint: below 768px wide = phone)
+
+// Room for the iPhone notch and home bar when installed full screen (viewport-fit=cover in the layout)
+.navbar-coach {
+  padding-top: calc(12px + env(safe-area-inset-top));
+}
+
+.tabbar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1030;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba($fit-white, .08);
+  background: $fit-black;
+}
+
+.tabbar-form {
+  display: flex;
+  flex: 1;
+}
+
+.tabbar-item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px; // big enough to tap
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: rgba($fit-white, .6);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+
+  // Same height for every icon, so all labels line up (the "New plan" circle included)
+  i {
+    display: grid;
+    place-items: center;
+    height: 30px;
+    font-size: 19px;
+  }
+
+  &.is-active { color: $fit-green; }
+}
+
+// "New plan": the round green button in the middle
+.tabbar-new i {
+  width: 30px;
+  border-radius: 50%;
+  background: $fit-green;
+  color: $fit-black;
+  font-size: 15px;
+}
+
+@include media-breakpoint-down(md) {
+  // Content and the coach button stay above the tab bar
+  body.has-tabbar {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  body.has-tabbar .coach-fab {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    right: 16px;
+  }
+
+  .page {
+    padding: 20px 16px 96px;
+  }
+
+  .page-title {
+    font-size: 1.6rem;
+  }
+
+  .navbar-coach {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  // iPhone zooms in on fields with text smaller than 16px: keep them at 16px
+  input,
+  select,
+  textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px !important;
+  }
+
+  // Buttons in the chat (Save / Update my plan) fill the width, easier to tap
+  #plan_actions .btn-lg,
+  #new_message_container .btn {
+    width: 100%;
+  }
+
+  #plan_actions form.button_to {
+    width: 100%;
+  }
+
+  // The plan header's buttons wrap nicely
+  .page-header > .d-flex {
+    width: 100%;
+  }
+
+  // Chat bubbles use the screen width
+  .chat-bubble-user {
+    max-width: 88%;
+  }
+}
