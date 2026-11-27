@@ -1,9 +1,9 @@
-// App-wide look: black + neon green, used by every page
+// App-wide look: black background, dark grey cards, lime + orange accents
 
 // ---------- Page layout (same width everywhere) ----------
 .page {
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 32px 16px 104px; // room for the coach button
 }
@@ -23,7 +23,7 @@
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
-  color: rgba($fit-black, .5);
+  color: $text-muted;
 }
 
 .page-title {
@@ -35,7 +35,7 @@
 
 .page-subtitle {
   margin: 4px 0 0;
-  color: rgba($fit-black, .55);
+  color: $text-muted;
 }
 
 .back-link {
@@ -43,13 +43,14 @@
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: 600;
-  color: rgba($fit-black, .55);
+  color: $text-muted;
   text-decoration: none;
 
-  &:hover { color: $fit-black; }
+  &:hover { color: $text; }
 }
 
-.text-accent { color: $fit-green; }
+// Goal number on the Today page
+.text-accent { color: $orange; }
 
 .section-title {
   margin: 24px 0 10px;
@@ -57,57 +58,74 @@
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: rgba($fit-black, .5);
+  color: $text-muted;
 }
 
 // ---------- Buttons ----------
-.btn-primary {
-  --bs-btn-color: #{$fit-green};
-  --bs-btn-hover-color: #{$fit-green};
-  --bs-btn-hover-bg: #{$fit-black-88};
-  --bs-btn-hover-border-color: #{$fit-black-88};
-  --bs-btn-active-color: #{$fit-green};
-  --bs-btn-disabled-color: #{$fit-green};
-}
-
+// Primary ("Done", "Create my plan", ...): lime with black text
+.btn-primary,
 .btn-success {
-  --bs-btn-color: #{$fit-black};
-  --bs-btn-hover-color: #{$fit-black};
-  --bs-btn-active-color: #{$fit-black};
+  --bs-btn-color: #{$black};
+  --bs-btn-bg: #{$lime};
+  --bs-btn-border-color: #{$lime};
+  --bs-btn-hover-color: #{$black};
+  --bs-btn-hover-bg: #{$lime-hover};
+  --bs-btn-hover-border-color: #{$lime-hover};
+  --bs-btn-active-color: #{$black};
+  --bs-btn-active-bg: #{$lime-hover};
+  --bs-btn-active-border-color: #{$lime-hover};
+  --bs-btn-disabled-color: #{$black};
+  --bs-btn-disabled-bg: #{$lime};
+  --bs-btn-disabled-border-color: #{$lime};
 }
 
+// Secondary ("Skip", "Log in", ...): transparent with a grey border
 .btn-outline-secondary {
-  --bs-btn-color: #{rgba($fit-black, .7)};
-  --bs-btn-border-color: #{rgba($fit-black, .15)};
-  --bs-btn-hover-color: #{$fit-black};
+  --bs-btn-color: #{$text};
+  --bs-btn-border-color: #{$border-strong};
+  --bs-btn-hover-color: #{$text};
   --bs-btn-hover-bg: transparent;
-  --bs-btn-hover-border-color: #{$fit-black};
-  --bs-btn-active-color: #{$fit-black};
+  --bs-btn-hover-border-color: #{$text-muted};
+  --bs-btn-active-color: #{$text};
   --bs-btn-active-bg: transparent;
-  --bs-btn-active-border-color: #{$fit-black};
+  --bs-btn-active-border-color: #{$text-muted};
+}
+
+// "New plan", "Add to calendar": same lime look as the primary buttons
+.btn-neon {
+  background: $lime;
+  color: $black;
+  font-weight: 700;
+
+  &:hover,
+  &:focus-visible { background: $lime-hover; color: $black; }
 }
 
 // ---------- Cards ----------
-.card { background: #FFFFFF; }
+.card {
+  background: $surface;
+  border-color: $card-border;
+  box-shadow: $card-shadow;
+}
 
 .card-today {
-  border-left: 4px solid $fit-green;
+  border-left: 3px solid $orange;
 }
 
 .table-today > td {
-  --bs-table-bg-state: #{$fit-green-40};
+  --bs-table-bg-state: #{rgba($text, .05)};
 }
 
-.text-bg-success { color: $fit-black !important; }
+.text-bg-success { color: $black !important; }
 
 // ---------- Links inside text ----------
 .link-underline-accent {
   font-weight: 700;
-  color: $fit-black;
+  color: $text;
   text-decoration: none;
-  border-bottom: 3px solid $fit-green;
+  border-bottom: 2px solid $orange;
 
-  &:hover { color: $fit-black; }
+  &:hover { color: $text; }
 }
 
 details summary {
@@ -118,26 +136,26 @@ details summary {
 // ---------- Chat ----------
 .chat-bubble-user {
   border-radius: 16px 16px 4px 16px;
-  background: $fit-black;
-  color: $fit-white;
+  background: $border;
+  color: $text;
 
-  a { color: $fit-green; }
+  a { color: $text; text-decoration: underline; }
 }
 
 // ---------- All plans ----------
 .plan-card {
-  color: $fit-black;
+  color: $text;
   transition: border-color .15s ease, transform .15s ease;
 
   &:hover {
-    color: $fit-black;
-    border-color: $fit-black;
+    color: $text;
+    border-color: $text-muted;
   }
 }
 
 .plan-card-arrow {
   font-size: 22px;
-  color: rgba($fit-black, .3);
+  color: $text-muted;
 }
 
 // ---------- Add to calendar modal ----------
@@ -161,20 +179,20 @@ details summary {
 
 // Highlight the cards that are ticked
 .plan-row:has(.plan-checkbox:checked) .plan-card {
-  border-color: $fit-black;
-  background: $fit-green-40;
+  border-color: $text;
+  background: $border;
 }
 
 .plan-progress {
   height: 6px;
   border-radius: 50rem;
-  background: rgba($fit-black, .08);
+  background: $border;
   overflow: hidden;
 
   div {
     height: 100%;
     border-radius: 50rem;
-    background: $fit-green;
+    background: $lime;
   }
 }
 
@@ -188,9 +206,11 @@ details summary {
 .plan-why {
   margin-bottom: 20px;
   padding: 16px 20px;
+  border: 1px solid $card-border;
   border-radius: 16px;
-  background: $fit-black;
-  color: $fit-white;
+  background: $surface;
+  box-shadow: $card-shadow;
+  color: $text;
 
   > summary {
     display: flex;
@@ -203,14 +223,14 @@ details summary {
     &::after {
       content: "+";
       margin-left: auto;
-      color: $fit-green;
+      color: $text-muted;
       font-size: 20px;
     }
   }
 
   &[open] > summary::after { content: "–"; }
 
-  strong { color: $fit-green; }
+  strong { color: $text; }
 }
 
 .plan-why-icon {
@@ -220,8 +240,8 @@ details summary {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: $fit-green;
-  color: $fit-black;
+  background: $border-strong;
+  color: $text;
   font-size: 13px;
   font-weight: 800;
   font-style: italic;
@@ -230,7 +250,7 @@ details summary {
 .plan-why-body {
   margin-top: 12px;
   font-size: 14px;
-  color: rgba($fit-white, .85);
+  color: $text-muted;
 
   p { margin-bottom: 8px; }
   ul { margin-bottom: 0; padding-left: 18px; }
@@ -247,12 +267,4 @@ details summary {
 
   > span { display: flex; align-items: center; gap: 10px; }
   form { margin: 0; }
-}
-
-.btn-neon {
-  background: $fit-green;
-  color: $fit-black;
-  font-weight: 700;
-
-  &:hover { background: $fit-green-40; color: $fit-black; }
 }
