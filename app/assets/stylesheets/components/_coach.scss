@@ -186,9 +186,9 @@
   gap: 8px;
   padding: 3px 0;
 
-  &.is-done { color: $text-muted; }
+  &.is-done { color: rgba($fit-black, .55); }
   &.is-active { font-weight: 600; }
-  &.is-waiting { color: rgba($text, .35); }
+  &.is-waiting { color: rgba($fit-black, .35); }
 }
 
 .plan-saving-icon {
