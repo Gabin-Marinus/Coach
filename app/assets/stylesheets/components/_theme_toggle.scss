@@ -12,6 +12,11 @@
   color: #F5F5F2;
   font-size: 15px;
 
+  .theme-toggle-icon {
+    width: 18px;
+    height: 18px;
+  }
+
   &:hover,
   &:focus-visible {
     border-color: #C6F432;

@@ -1,6 +1,7 @@
 // Black navbar with neon accents
 .navbar-coach {
   padding: 12px 24px;
+  border-bottom: 2px solid $fit-green; // neon line under the navbar, like the dark design
   background: $fit-black;
 
   .navbar-brand {
