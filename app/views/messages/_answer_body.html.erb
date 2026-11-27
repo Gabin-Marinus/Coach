@@ -1,0 +1,13 @@
+<%# Inside of a coach answer bubble: the text so far as Markdown, or "typing" before the first words %>
+<% body = capture do %>
+  <% if content.present? %>
+    <%= raw(render_markdown(content)) %>
+  <% else %>
+    <p class="coach-typing mb-2">Your coach is typing…</p>
+  <% end %>
+<% end %>
+<% if chat.coach? %>
+  <%= body %>
+<% else %>
+  <div class="px-3 pt-3 pb-1"><%= body %></div>
+<% end %>

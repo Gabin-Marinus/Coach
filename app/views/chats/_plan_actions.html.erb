@@ -1,0 +1,12 @@
+<div id="plan_actions">
+  <% if chat.plan_proposed? %>
+    <div class="text-center my-3">
+      <%= button_to "Save my plan", chat_plans_path(chat),
+                    class: "btn btn-success btn-lg",
+                    data: {
+                      turbo_confirm: "Save my plan? Your current plan will be archived.",
+                      turbo_submits_with: "Creating your 1-month plan... this can take a minute or two ⏳"
+                    } %>
+    </div>
+  <% end %>
+</div>
